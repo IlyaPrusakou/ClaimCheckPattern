@@ -1,0 +1,11 @@
+@EndUserText: {
+  label: 'Service Definition for ZC_PRU_STOCK_REQST'
+}
+@ObjectModel: {
+  leadingEntity: {
+    name: 'ZC_PRU_STOCK_REQST'
+  }
+}
+define service ZAPI_PRU_STOCK_REQST_O4 provider contracts odata_v4_webapi {
+  expose ZC_PRU_STOCK_REQST;
+}

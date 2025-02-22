@@ -1,0 +1,27 @@
+managed implementation in class ZBP_R_PRU_PURCH_ORDER unique;
+strict ( 2 );
+define behavior for ZR_PRU_PURCH_ORDER alias ZrPruPurchOrder
+persistent table ZPRU_PURCH_ORDER
+lock master
+authorization master( global )
+
+{
+  field ( mandatory : create )
+   StockReqId;
+
+  field ( readonly : update )
+   StockReqId;
+
+
+  create;
+  update;
+  delete;
+
+  mapping for ZPRU_PURCH_ORDER
+  {
+    StockReqId = stock_req_id;
+    PurchaseName = purchase_name;
+    PurchaseQnty = purchase_qnty;
+    PurchaseUnitMeasure = purchase_unit_measure;
+  }
+}

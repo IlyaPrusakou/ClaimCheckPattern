@@ -1,0 +1,28 @@
+managed implementation in class ZBP_R_PRU_MSG_STORE unique;
+strict ( 2 );
+define behavior for ZR_PRU_MSG_STORE alias ZrPruMsgStore
+persistent table ZPRU_MSG_STORE
+lock master
+authorization master( global )
+
+{
+  field ( mandatory : create )
+   Claim;
+
+  field ( readonly : update )
+   Claim;
+
+
+  create;
+  update;
+  delete;
+
+  mapping for ZPRU_MSG_STORE
+  {
+    Claim = claim;
+    StockReqId = stock_req_id;
+    StockName = stock_name;
+    StockQnty = stock_qnty;
+    StockUnitMeasure = stock_unit_measure;
+  }
+}

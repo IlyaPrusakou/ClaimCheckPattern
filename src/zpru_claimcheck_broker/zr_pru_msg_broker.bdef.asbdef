@@ -1,0 +1,24 @@
+managed implementation in class ZBP_R_PRU_MSG_BROKER unique;
+strict ( 2 );
+define behavior for ZR_PRU_MSG_BROKER alias ZrPruMsgBroker
+persistent table ZPRU_MSG_BROKER
+lock master
+authorization master( global )
+
+{
+  field ( mandatory : create )
+   ClaimId;
+
+  field ( readonly : update )
+   ClaimId;
+
+
+  create;
+  update;
+  delete;
+
+  mapping for ZPRU_MSG_BROKER
+  {
+    ClaimId = claim_id;
+  }
+}
