@@ -1,8 +1,8 @@
-@AccessControl.authorizationCheck: #CHECK
+@AccessControl.authorizationCheck: #NOT_REQUIRED
 @Metadata.allowExtensions: true
 @EndUserText.label: '###GENERATED Core Data Service Entity'
 define root view entity ZR_PRU_STOCK_REQST
-  as select from ZPRU_STOCK_REQST
+  as select from zpru_stock_reqst
 {
   key stock_req_id as StockReqId,
   stock_name as StockName,

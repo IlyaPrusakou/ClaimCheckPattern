@@ -1,0 +1,9 @@
+interface;
+
+define behavior for ZI_PRU_STOCK_REQST alias ZrPruStockReqst
+{
+  use create;
+  use update;
+  use delete;
+  use event sendClaim;
+}
