@@ -1,6 +1,7 @@
 managed implementation in class ZBP_R_PRU_STOCK_REQST unique;
 strict ( 2 );
 define behavior for ZR_PRU_STOCK_REQST alias ZrPruStockReqst
+with additional save
 persistent table zpru_stock_reqst
 lock master
 authorization master ( global )
