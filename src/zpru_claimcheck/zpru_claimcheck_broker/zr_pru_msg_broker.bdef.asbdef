@@ -1,24 +1,27 @@
 managed implementation in class ZBP_R_PRU_MSG_BROKER unique;
 strict ( 2 );
-define behavior for ZR_PRU_MSG_BROKER alias ZrPruMsgBroker
-persistent table ZPRU_MSG_BROKER
+define behavior for ZR_PRU_MSG_BROKER alias Broker
+persistent table zpru_msg_broker
 lock master
-authorization master( global )
+authorization master ( global )
 
 {
   field ( mandatory : create )
-   ClaimId;
+  BrokerClaimId;
 
   field ( readonly : update )
-   ClaimId;
+  BrokerClaimId;
 
 
   create;
   update;
   delete;
 
-  mapping for ZPRU_MSG_BROKER
-  {
-    ClaimId = claim_id;
-  }
+  static action raiseBroadCast parameter zpru_d_claim;
+  event broadCastEvent parameter ZPRU_D_BROADCAST;
+
+  mapping for zpru_msg_broker
+    {
+      BrokerClaimId = claim_id;
+    }
 }

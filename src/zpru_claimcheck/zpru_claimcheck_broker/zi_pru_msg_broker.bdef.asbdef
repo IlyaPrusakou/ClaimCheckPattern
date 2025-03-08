@@ -1,0 +1,11 @@
+interface;
+
+define behavior for ZI_PRU_MSG_BROKER alias Broker
+{
+  use create;
+  use update;
+  use delete;
+
+  use event broadcastEvent;
+  use action raiseBroadCast;
+}
