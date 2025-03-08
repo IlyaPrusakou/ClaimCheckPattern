@@ -5,6 +5,6 @@ ENDCLASS.
 
 CLASS lcl_local_event_consumption IMPLEMENTATION.
   METHOD consume_broadcast_claim.
-
+" place to proceed
   ENDMETHOD.
 ENDCLASS.
