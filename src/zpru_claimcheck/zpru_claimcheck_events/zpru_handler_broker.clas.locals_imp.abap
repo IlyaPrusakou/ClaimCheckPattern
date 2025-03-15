@@ -13,5 +13,7 @@ CLASS lcl_local_event_consumption IMPLEMENTATION.
     FAILED DATA(ls_failed)
     REPORTED DATA(ls_reported).
 
+    " process response
+
   ENDMETHOD.
 ENDCLASS.

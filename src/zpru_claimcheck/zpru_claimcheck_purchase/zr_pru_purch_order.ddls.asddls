@@ -1,10 +1,10 @@
-@AccessControl.authorizationCheck: #CHECK
+@AccessControl.authorizationCheck: #NOT_REQUIRED
 @Metadata.allowExtensions: true
 @EndUserText.label: '###GENERATED Core Data Service Entity'
 define root view entity ZR_PRU_PURCH_ORDER
-  as select from ZPRU_PURCH_ORDER
+  as select from zpru_purch_order
 {
-  key stock_req_id as StockReqId,
+  key puchase_order_id as PurchaseOrderId,
   purchase_name as PurchaseName,
   purchase_qnty as PurchaseQnty,
   @Consumption.valueHelpDefinition: [ {
@@ -12,6 +12,7 @@ define root view entity ZR_PRU_PURCH_ORDER
     entity.element: 'UnitOfMeasure', 
     useForValidation: true
   } ]
-  purchase_unit_measure as PurchaseUnitMeasure
+  purchase_unit_measure as PurchaseUnitMeasure,
+  stock_req_id as ReferenceStockID
   
 }
