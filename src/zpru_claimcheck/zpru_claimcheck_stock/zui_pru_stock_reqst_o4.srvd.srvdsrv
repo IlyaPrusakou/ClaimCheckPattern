@@ -1,0 +1,12 @@
+@EndUserText: {
+  label: 'Service Definition for Stock'
+}
+@ObjectModel: {
+  leadingEntity: {
+    name: 'ZC_PRU_STOCK_REQST'
+  }
+}
+define service ZUI_PRU_STOCK_REQST_O4
+  provider contracts odata_v4_ui {
+  expose ZC_PRU_STOCK_REQST;
+}

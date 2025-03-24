@@ -1,9 +1,13 @@
 managed implementation in class ZBP_R_PRU_STOCK_REQST unique;
 strict ( 2 );
+with draft;
+
 define behavior for ZR_PRU_STOCK_REQST alias ZrPruStockReqst
 with additional save
 persistent table zpru_stock_reqst
+draft table zpru_stock_req_d
 lock master
+total etag LastChangedAt
 authorization master ( global )
 
 {
@@ -18,13 +22,24 @@ authorization master ( global )
   update;
   delete;
 
+  draft action Activate optimized;
+  draft action Discard;
+  draft action Resume;
+  draft action Edit;
+  draft determine action Prepare;
+
   event sendClaim parameter zpru_d_claim;
 
   mapping for zpru_stock_reqst
     {
-      StockReqId       = stock_req_id;
-      StockName        = stock_name;
-      StockQnty        = stock_qnty;
-      StockUnitMeasure = stock_unit_measure;
+      StockReqId         = stock_req_id;
+      StockName          = stock_name;
+      StockQnty          = stock_qnty;
+      StockUnitMeasure   = stock_unit_measure;
+      LocalCreatedBy     = local_created_by;
+      LocalCreatedAt     = local_created_at;
+      LocalLastChangedBy = local_last_changed_by;
+      LocalLastChangedAt = local_last_changed_at;
+      LastChangedAt      = last_changed_at;
     }
 }
