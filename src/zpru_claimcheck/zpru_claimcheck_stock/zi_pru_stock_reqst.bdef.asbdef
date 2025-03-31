@@ -1,9 +1,14 @@
 interface;
-
+use draft;
 define behavior for ZI_PRU_STOCK_REQST alias ZrPruStockReqst
 {
   use create;
   use update;
   use delete;
   use event sendClaim;
+  use action Edit;
+  use action Activate;
+  use action Discard;
+  use action Prepare;
+  use action Resume;
 }

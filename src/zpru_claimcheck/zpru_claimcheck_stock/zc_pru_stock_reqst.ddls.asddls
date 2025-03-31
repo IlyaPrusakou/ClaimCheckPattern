@@ -1,5 +1,5 @@
 @Metadata.allowExtensions: true
-@EndUserText.label: '###GENERATED Core Data Service Entity'
+@EndUserText.label: 'Stock UI ODATA Entity'
 @AccessControl.authorizationCheck: #NOT_REQUIRED
 define root view entity ZC_PRU_STOCK_REQST
   provider contract transactional_query
