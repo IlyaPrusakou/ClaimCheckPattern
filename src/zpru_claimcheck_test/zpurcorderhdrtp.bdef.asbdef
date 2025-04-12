@@ -1,0 +1,61 @@
+managed with additional save with full data implementation in class zbp_purcorderhdrtp unique;
+strict ( 2 );
+
+
+define behavior for ZPurcOrderHdrTP alias PurchaseOrder
+persistent table zpurc_order_hdr
+lock master
+authorization master ( instance )
+{
+  create;
+  update;
+  delete;
+  field ( readonly : update ) purchaseOrderId;
+  field ( mandatory : create ) purchaseOrderId;
+  association _items { create; }
+
+  event orderCreated deep parameter ZPurcMessageHeader;
+
+  mapping for zpurc_order_hdr
+    {
+      purchaseOrderId = purchase_order_id;
+      orderDate       = order_date;
+      supplierId      = supplier_id;
+      supplierName    = supplier_name;
+      buyerId         = buyer_id;
+      buyerName       = buyer_name;
+      totalAmount     = total_amount;
+      headerCurrency  = header_currency;
+      deliveryDate    = delivery_date;
+      status          = status;
+      paymentTerms    = payment_terms;
+      shippingMethod  = shipping_method;
+    }
+}
+
+define behavior for ZPurcOrderItemTP alias PurchaseItem
+persistent table zpurc_order_item
+lock dependent by _header
+authorization dependent by _header
+{
+  update;
+  delete;
+  field ( readonly : update ) itemNumber, purchaseOrderId;
+  field ( mandatory : create ) itemNumber, purchaseOrderId;
+
+  association _header;
+
+  mapping for zpurc_order_item
+    {
+      itemNumber        = item_number;
+      purchaseOrderId   = purchase_order_id;
+      productId         = product_id;
+      productName       = product_name;
+      quantity          = quantity;
+      unitPrice         = unit_price;
+      totalPrice        = total_price;
+      deliveryDate      = delivery_date;
+      warehouseLocation = warehouse_location;
+      itemCurrency      = item_currency;
+    }
+}

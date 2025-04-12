@@ -1,0 +1,19 @@
+interface;
+
+define behavior for ZPurcOrderHdrProj alias PurchaseOrder
+{
+  use create;
+  use update;
+  use delete;
+
+  use association _items { create; }
+  use event orderCreated;
+}
+
+define behavior for ZPurcOrderItemProj alias PurchaseItem
+{
+  use update;
+  use delete;
+
+  use association _header;
+}

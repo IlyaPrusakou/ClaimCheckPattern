@@ -1,0 +1,5 @@
+CLASS zbp_purcorderhdrtp DEFINITION PUBLIC ABSTRACT FINAL FOR BEHAVIOR OF zpurcorderhdrtp.
+ENDCLASS.
+
+CLASS zbp_purcorderhdrtp IMPLEMENTATION.
+ENDCLASS.

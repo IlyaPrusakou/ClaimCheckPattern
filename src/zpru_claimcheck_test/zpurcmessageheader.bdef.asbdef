@@ -1,0 +1,19 @@
+abstract;
+strict ( 2 );
+with hierarchy;
+
+define behavior for ZPurcMessageHeader alias MessageHeader
+{
+  association header;
+}
+
+define behavior for ZPurcOrderHdrAbstract alias PurchaseOrder
+{
+  association message;
+  association items;
+}
+
+define behavior for ZPurcOrderItemAbstract alias PurchaseItem
+{
+  association header;
+}
