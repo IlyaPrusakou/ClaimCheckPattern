@@ -1,0 +1,20 @@
+managed implementation in class zbp_channelpersistencetp unique;
+strict ( 2 );
+
+define behavior for ZChannelPersistenceTP alias ChannelPersistence
+persistent table zpru_chnl_store
+lock master
+authorization master ( instance )
+{
+  create;
+  update;
+  delete;
+
+  field ( readonly : update ) Messageid;
+  field ( mandatory : create ) Messageid;
+
+  static action persistMessage deep table parameter ZPurcMessageHeader;
+  static action processinvalidMessage deep table parameter ZPurcMessageHeader;
+  static action processDeadLetter deep table parameter ZPurcMessageHeader;
+
+}

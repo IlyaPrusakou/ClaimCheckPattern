@@ -1,0 +1,12 @@
+interface;
+
+define behavior for ZChannelPersistenceProj alias ChannelPersistence
+{
+  use create;
+  use update;
+  use delete;
+
+  use action persistMessage deep parameter ZPurcMessageHeader;
+  use action processinvalidMessage deep parameter ZPurcMessageHeader;
+  use action processDeadLetter deep parameter ZPurcMessageHeader;
+}

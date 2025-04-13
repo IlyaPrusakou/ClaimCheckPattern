@@ -3,9 +3,9 @@
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <DDLS>
-    <DDLNAME>ZPURCORDERROUTES</DDLNAME>
+    <DDLNAME>ZCHANNELPERSISTENCETP</DDLNAME>
     <DDLANGUAGE>E</DDLANGUAGE>
-    <DDTEXT>Purchase Order Routes</DDTEXT>
+    <DDTEXT>Channel Store</DDTEXT>
     <SOURCE_TYPE>W</SOURCE_TYPE>
    </DDLS>
   </asx:values>

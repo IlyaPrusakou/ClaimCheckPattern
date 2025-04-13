@@ -15,6 +15,7 @@ CLASS lhc_goodreceipt IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD onpurchaseordercreate.
+    DATA(lv_gr) = VALUE #( keys[ 1 ]-%param[ 1 ]-messageid OPTIONAL ).
   ENDMETHOD.
 
 ENDCLASS.

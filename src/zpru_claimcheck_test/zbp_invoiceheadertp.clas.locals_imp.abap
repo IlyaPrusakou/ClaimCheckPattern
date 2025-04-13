@@ -15,6 +15,7 @@ CLASS lhc_invoice IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD onpurchaseordercreate.
+    DATA(lv_inv) = VALUE #( keys[ 1 ]-%param[ 1 ]-messageid OPTIONAL ).
   ENDMETHOD.
 
 ENDCLASS.

@@ -15,6 +15,9 @@ CLASS lhc_approvalrequest IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD onpurchaseordercreate.
+
+    DATA(lv_appr) = VALUE #( keys[ 1 ]-%param[ 1 ]-messageid OPTIONAL ).
+
   ENDMETHOD.
 
 ENDCLASS.
