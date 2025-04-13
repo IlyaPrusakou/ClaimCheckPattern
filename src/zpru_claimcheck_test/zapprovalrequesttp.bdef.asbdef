@@ -1,0 +1,32 @@
+managed implementation in class zbp_approvalrequesttp unique;
+strict ( 2 );
+
+define behavior for ZApprovalRequestTP alias ApprovalRequest
+persistent table zapproval_reqst
+lock master
+authorization master ( instance )
+{
+  create;
+  update;
+  delete;
+
+  field ( readonly : update ) ApprovalRequestId;
+  field ( mandatory : create ) ApprovalRequestId;
+
+  static action onPurchaseOrderCreate deep table parameter ZPurcMessageHeader;
+
+  mapping for zapproval_reqst
+    {
+      ApprovalRequestId = approval_request_id;
+      PurchaseOrderId   = purchase_order_id;
+      RequestDate       = request_date;
+      RequesterId       = requester_id;
+      RequesterName     = requester_name;
+      ApproverId        = approver_id;
+      ApproverName      = approver_name;
+      ApprovalStatus    = approval_status;
+      ApprovalDeadline  = approval_deadline;
+      ApprovalNotes     = approval_notes;
+    }
+
+}

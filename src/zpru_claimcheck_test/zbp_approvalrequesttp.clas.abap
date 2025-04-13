@@ -1,0 +1,5 @@
+CLASS zbp_approvalrequesttp DEFINITION PUBLIC ABSTRACT FINAL FOR BEHAVIOR OF zapprovalrequesttp.
+ENDCLASS.
+
+CLASS zbp_approvalrequesttp IMPLEMENTATION.
+ENDCLASS.

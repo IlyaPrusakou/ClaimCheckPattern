@@ -1,0 +1,32 @@
+managed implementation in class zbp_invoiceheadertp unique;
+strict ( 2 );
+
+define behavior for ZInvoiceHeaderTP alias Invoice
+persistent table zinvoice_header
+lock master
+authorization master ( instance )
+{
+  create;
+  update;
+  delete;
+  field ( readonly : update ) InvoiceId;
+  field ( mandatory : create ) InvoiceId;
+
+  static action onPurchaseOrderCreate deep table parameter ZPurcMessageHeader;
+
+  mapping for zinvoice_header
+    {
+      InvoiceId       = invoice_id;
+      PurchaseOrderId = purchase_order_id;
+      InvoiceDate     = invoice_date;
+      DueDate         = due_date;
+      SupplierId      = supplier_id;
+      SupplierName    = supplier_name;
+      BuyerId         = buyer_id;
+      BuyerName       = buyer_name;
+      TotalAmount     = total_amount;
+      InvoiceCurrency = invoice_currency;
+      Status          = status;
+    }
+
+}

@@ -1,0 +1,33 @@
+managed implementation in class zbp_goodreceipttp unique;
+strict ( 2 );
+
+define behavior for ZGoodReceiptTP alias GoodReceipt
+persistent table zgr_receipt_head
+lock master
+authorization master ( instance )
+
+{
+  create;
+  update;
+  delete;
+  field ( readonly : update ) GoodsReceiptId;
+  field ( mandatory : create ) GoodsReceiptId;
+
+  static action onPurchaseOrderCreate deep table parameter ZPurcMessageHeader;
+
+  mapping for zgr_receipt_head
+    {
+      GoodsReceiptId    = goods_receipt_id;
+      PurchaseOrderId   = purchase_order_id;
+      ReceiptDate       = receipt_date;
+      SupplierId        = supplier_id;
+      SupplierName      = supplier_name;
+      WarehouseId       = warehouse_id;
+      WarehouseLocation = warehouse_location;
+      ReceivedBy        = received_by;
+      TotalItems        = total_items;
+      Status            = status;
+      Remarks           = remarks;
+    }
+
+}
