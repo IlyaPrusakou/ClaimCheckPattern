@@ -55,4 +55,8 @@ INTERFACE zpru_if_purc_order
                processdeadletter     TYPE char30 VALUE `PROCESSDEADLETTER`,
              END OF gcs_action_reciver.
 
+  CONSTANTS: BEGIN OF gcs_message_type,
+               po_document TYPE string VALUE `PO_DOCUMENT`,
+             END OF gcs_message_type.
+
 ENDINTERFACE.

@@ -20,7 +20,10 @@ CLASS zpru_test_via_abap IMPLEMENTATION.
 
   METHOD if_oo_adt_classrun~main.
 
-    insert_routes( ).
+
+    cl_abap_tx=>save( ).
+
+    zbp_purcorderhdrtp=>raise_event( ).
 
   ENDMETHOD.
 

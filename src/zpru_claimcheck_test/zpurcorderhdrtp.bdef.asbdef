@@ -1,4 +1,5 @@
-managed with additional save with full data implementation in class zbp_purcorderhdrtp unique;
+managed with additional save with full data
+implementation in class zbp_purcorderhdrtp unique;
 strict ( 2 );
 
 
