@@ -10,9 +10,10 @@
 define view entity ZChannelRouteAssignment
   as select from zpru_chnl_assgmt
 {
-  key channel as Channel,
-  key route   as Route,
-  key bdef    as BusinessObject,
-  key entity  as BusinessObjectEntity,
-      action  as BusinessObjectAction
+  key channel     as Channel,
+  key route       as Route,
+  key bdef        as BusinessObject,
+  key entity      as BusinessObjectEntity,
+  key action      as BusinessObjectAction,
+      description as Description
 }

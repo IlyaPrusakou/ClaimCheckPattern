@@ -57,6 +57,10 @@ CLASS lcl_router DEFINITION.
       CHANGING
         ct_po_deadletter       TYPE abp_behv_changes_tab.
 
+    METHODS get_process_deadletter_route
+      RETURNING
+        VALUE(rs_process_deadletter_route) TYPE zpru_if_purc_order=>ts_channel_assignments.
+
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -75,9 +79,13 @@ CLASS lcl_utility DEFINITION.
   PRIVATE SECTION.
 ENDCLASS.
 
-CLASS lcl_local_event_consumption DEFINITION INHERITING FROM cl_abap_behavior_event_handler.
+CLASS lcl_local_event_consumption DEFINITION
+INHERITING FROM cl_abap_behavior_event_handler.
+
   PRIVATE SECTION.
-    METHODS on_order_created FOR ENTITY EVENT it_purchase_order FOR purchaseorder~ordercreated.
+    METHODS on_order_created
+        FOR ENTITY EVENT it_purchase_order
+          FOR purchaseorder~ordercreated.
 
 ENDCLASS.
 
@@ -114,7 +122,9 @@ CLASS lcl_local_event_consumption IMPLEMENTATION.
       EXPORTING
           it_po_invalidated = lt_po_invalidated ).
 
-    " Dynamic Router
+    " read customizing table with list of receivers
+    " further it will be used in Contend-Based and
+    " Point-to-Point patterns
     SELECT * FROM zchannelrouteassignment
     WHERE channel = @zpru_if_purc_order=>gcs_channel-po_order
     INTO TABLE @DATA(lt_channel_assignments).
@@ -308,13 +318,89 @@ CLASS lcl_router IMPLEMENTATION.
     ENDIF.
 
   ENDMETHOD.
+
   METHOD route_approved_po_paymentterms.
+
+    DATA: lt_po_prepaid  LIKE it_po_approved,
+          lt_po_postpaid LIKE it_po_approved.
+
+    IF it_channel_assignments IS INITIAL.
+      lcl_utility=>prepare_operation_package(
+        EXPORTING
+            is_channel_assignments = get_process_deadletter_route( )
+            it_purc_order_messsage = it_po_approved
+        IMPORTING
+            et_operation_package   = ct_po_deadletter ).
+      RETURN.
+    ENDIF.
+
+    LOOP AT it_po_approved ASSIGNING FIELD-SYMBOL(<ls_po_approved>).
+      IF <ls_po_approved>-header-paymentterms = zpru_if_purc_order=>gcs_po_payment_terms-prepaid.
+        APPEND INITIAL LINE TO lt_po_prepaid ASSIGNING FIELD-SYMBOL(<ls_po_prepaid>).
+        <ls_po_prepaid> = CORRESPONDING #( DEEP <ls_po_approved> ).
+      ELSE.
+        APPEND INITIAL LINE TO lt_po_postpaid ASSIGNING FIELD-SYMBOL(<ls_po_postpaid>).
+        <ls_po_postpaid> = CORRESPONDING #( DEEP <ls_po_approved> ).
+      ENDIF.
+    ENDLOOP.
+
+    IF lt_po_prepaid IS NOT INITIAL.
+      ASSIGN it_channel_assignments[ route =
+           zpru_if_purc_order=>gcs_po_route-payment_terms-prepaid ]
+                                               TO FIELD-SYMBOL(<ls_channel_assignment>).
+      IF sy-subrc = 0.
+        lcl_utility=>prepare_operation_package(
+          EXPORTING
+              is_channel_assignments = <ls_channel_assignment>
+              it_purc_order_messsage = lt_po_prepaid
+          IMPORTING
+              et_operation_package   = et_po_prepaid ).
+      ELSE.
+        lcl_utility=>prepare_operation_package(
+       EXPORTING
+           is_channel_assignments = get_process_deadletter_route( )
+           it_purc_order_messsage = lt_po_prepaid
+       IMPORTING
+           et_operation_package   = ct_po_deadletter ).
+      ENDIF.
+    ENDIF.
+
+    IF lt_po_postpaid IS NOT INITIAL.
+      ASSIGN it_channel_assignments[ route =
+                    zpru_if_purc_order=>gcs_po_route-payment_terms-other ]
+                                                             TO <ls_channel_assignment>.
+      IF sy-subrc = 0.
+        lcl_utility=>prepare_operation_package(
+          EXPORTING
+              is_channel_assignments = <ls_channel_assignment>
+              it_purc_order_messsage = lt_po_postpaid
+          IMPORTING
+              et_operation_package   = et_po_postpaid ).
+      ELSE.
+        lcl_utility=>prepare_operation_package(
+          EXPORTING
+              is_channel_assignments = get_process_deadletter_route( )
+              it_purc_order_messsage = lt_po_postpaid
+          IMPORTING
+              et_operation_package   = ct_po_deadletter ).
+      ENDIF.
+    ENDIF.
 
   ENDMETHOD.
 
 
   METHOD route_pending_po_for_approval.
 
+  ENDMETHOD.
+
+  METHOD get_process_deadletter_route.
+    SELECT *
+    FROM zchannelrouteassignment
+    WHERE channel = @zpru_if_purc_order=>gcs_channel-po_order
+    AND   route   = @zpru_if_purc_order=>gcs_po_route-simple_router-dead_letter
+    INTO TABLE @DATA(lt_process_deadletter_route).
+
+    rs_process_deadletter_route =  VALUE #( lt_process_deadletter_route[ 1 ] OPTIONAL ).
   ENDMETHOD.
 
 ENDCLASS.
@@ -349,7 +435,8 @@ CLASS lcl_utility IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    <ls_cid> = lv_type_name.
+    zpru_cl_purchase_order_broker=>mv_last_cid += 1.
+    <ls_cid> = zpru_cl_purchase_order_broker=>mv_last_cid.
 
     LOOP AT it_purc_order_messsage ASSIGNING FIELD-SYMBOL(<ls_po_message>).
 

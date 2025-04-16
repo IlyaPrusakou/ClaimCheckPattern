@@ -20,10 +20,7 @@ CLASS zpru_test_via_abap IMPLEMENTATION.
 
   METHOD if_oo_adt_classrun~main.
 
-
-    cl_abap_tx=>save( ).
-
-    zbp_purcorderhdrtp=>raise_event( ).
+    insert_routes( ).
 
   ENDMETHOD.
 
@@ -234,22 +231,36 @@ CLASS zpru_test_via_abap IMPLEMENTATION.
       ROLLBACK WORK.
     ENDIF.
 
-
     lt_routes = VALUE #( ( channel   = zpru_if_purc_order=>gcs_channel-po_order
                            route     = zpru_if_purc_order=>gcs_po_route-payment_terms-prepaid
                            bdef      = zpru_if_purc_order=>gcs_bdef_name-good_receipt
                            entity    = zpru_if_purc_order=>gcs_entity_name-good_receipt
-                           action    = zpru_if_purc_order=>gcs_action_reciver-onpurchaseordercreate )
+                           action    = zpru_if_purc_order=>gcs_action_reciver-onpurchaseordercreate
+                           description = 'Route for Prepaid Terms' )
                          ( channel = zpru_if_purc_order=>gcs_channel-po_order
                            route     = zpru_if_purc_order=>gcs_po_route-payment_terms-other
                            bdef      = zpru_if_purc_order=>gcs_bdef_name-invoice
                            entity    = zpru_if_purc_order=>gcs_entity_name-invoice
-                           action    = zpru_if_purc_order=>gcs_action_reciver-onpurchaseordercreate )
+                           action    = zpru_if_purc_order=>gcs_action_reciver-onpurchaseordercreate
+                           description = 'Route for Other Payment Terms' )
                          ( channel   = zpru_if_purc_order=>gcs_channel-po_order
                            route     = zpru_if_purc_order=>gcs_po_route-simple_router-approval_request
                            bdef      = zpru_if_purc_order=>gcs_bdef_name-approval_request
                            entity    = zpru_if_purc_order=>gcs_entity_name-approval_request
-                           action    = zpru_if_purc_order=>gcs_action_reciver-onpurchaseordercreate ) ).
+                           action    = zpru_if_purc_order=>gcs_action_reciver-onpurchaseordercreate
+                           description = 'Route for Creation of Approval Request' )
+                         ( channel   = zpru_if_purc_order=>gcs_channel-po_order
+                           route     = zpru_if_purc_order=>gcs_po_route-simple_router-dead_letter
+                           bdef      = zpru_if_purc_order=>gcs_bdef_name-message_store
+                           entity    = zpru_if_purc_order=>gcs_entity_name-message_store
+                           action    = zpru_if_purc_order=>gcs_action_reciver-processdeadletter
+                           description = 'Route for Dead Letter Queue' )
+                         ( channel   = zpru_if_purc_order=>gcs_channel-po_order
+                           route     = zpru_if_purc_order=>gcs_po_route-simple_router-invalid_message
+                           bdef      = zpru_if_purc_order=>gcs_bdef_name-message_store
+                           entity    = zpru_if_purc_order=>gcs_entity_name-message_store
+                           action    = zpru_if_purc_order=>gcs_action_reciver-processinvalidmessage
+                           description = 'Route for Invalide Message Queue' ) ).
 
     INSERT zpru_chnl_assgmt FROM TABLE @lt_routes.
 
