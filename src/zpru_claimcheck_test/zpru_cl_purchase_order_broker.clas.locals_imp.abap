@@ -24,6 +24,14 @@ CLASS lcl_channel DEFINITION.
         VALUE(rt_black_list) TYPE zpru_if_purc_order=>tt_supplier_id.
 
   PROTECTED SECTION.
+
+    METHODS send_payload
+      IMPORTING
+        it_operation_package TYPE abp_behv_changes_tab
+      CHANGING
+        cs_failed_dyn        TYPE abp_behv_response_tab
+        cs_reported_dyn      TYPE abp_behv_response_tab.
+
   PRIVATE SECTION.
 ENDCLASS.
 
@@ -60,6 +68,12 @@ CLASS lcl_router DEFINITION.
     METHODS get_process_deadletter_route
       RETURNING
         VALUE(rs_process_deadletter_route) TYPE zpru_if_purc_order=>ts_channel_assignments.
+
+    METHODS validate_channel_assignments
+      IMPORTING
+        it_channel_assignments TYPE zpru_if_purc_order=>tt_channel_assignments
+      EXPORTING
+        et_valid_assignments   TYPE zpru_if_purc_order=>tt_channel_assignments.
 
   PROTECTED SECTION.
   PRIVATE SECTION.
@@ -144,11 +158,11 @@ CLASS lcl_local_event_consumption IMPLEMENTATION.
     lo_router->route_pending_po_for_approval(
       EXPORTING
         it_channel_assignments = lt_channel_assignments
-        it_po_pending        = lt_po_pending
+        it_po_pending          = lt_po_pending
       IMPORTING
-        et_po_for_approval   = DATA(lt_po_for_approval)
+        et_po_for_approval     = DATA(lt_po_for_approval)
       CHANGING
-        ct_po_deadletter     = lt_po_deadletter ).
+        ct_po_deadletter       = lt_po_deadletter ).
 
     " Dead Letter Pattern
     lo_channel->send_2_deadletter_message(
@@ -237,9 +251,13 @@ CLASS lcl_channel IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    MODIFY ENTITIES OPERATIONS it_po_invalidated
-     FAILED   ls_failed_dyn
-     REPORTED ls_reported_dyn.
+    send_payload(
+        EXPORTING
+            it_operation_package = it_po_invalidated
+        CHANGING
+            cs_failed_dyn        = ls_failed_dyn
+            cs_reported_dyn      = ls_reported_dyn ).
+
   ENDMETHOD.
 
   METHOD send_2_deadletter_message.
@@ -251,9 +269,12 @@ CLASS lcl_channel IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    MODIFY ENTITIES OPERATIONS it_po_deadletter
-      FAILED   ls_failed_dyn
-      REPORTED ls_reported_dyn.
+    send_payload(
+        EXPORTING
+            it_operation_package = it_po_deadletter
+        CHANGING
+            cs_failed_dyn        = ls_failed_dyn
+            cs_reported_dyn      = ls_reported_dyn ).
   ENDMETHOD.
 
   METHOD send_2_receiver.
@@ -265,15 +286,27 @@ CLASS lcl_channel IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    MODIFY ENTITIES OPERATIONS it_operation_package
-     FAILED   ls_failed_dyn
-     REPORTED ls_reported_dyn.
+    send_payload(
+        EXPORTING
+          it_operation_package = it_operation_package
+        CHANGING
+          cs_failed_dyn        = ls_failed_dyn
+          cs_reported_dyn      = ls_reported_dyn ).
+
   ENDMETHOD.
 
   METHOD get_black_list.
-    rt_black_list = VALUE #( ( sign = `I`
+    rt_black_list = VALUE #( ( sign   = `I`
                                option = `EQ`
-                               low = `SUP003` ) ).
+                               low    = `SUP003` ) ).
+  ENDMETHOD.
+
+  METHOD send_payload.
+
+    MODIFY ENTITIES OPERATIONS it_operation_package
+     FAILED   cs_failed_dyn
+     REPORTED cs_reported_dyn.
+
   ENDMETHOD.
 
 ENDCLASS.
@@ -391,6 +424,33 @@ CLASS lcl_router IMPLEMENTATION.
 
   METHOD route_pending_po_for_approval.
 
+    IF it_channel_assignments IS INITIAL.
+      RETURN.
+    ENDIF.
+
+    validate_channel_assignments(
+          EXPORTING
+            it_channel_assignments = it_channel_assignments
+          IMPORTING
+            et_valid_assignments   = DATA(lt_valid_assignments) ).
+
+    IF lt_valid_assignments IS INITIAL.
+      lcl_utility=>prepare_operation_package(
+        EXPORTING
+            is_channel_assignments = get_process_deadletter_route( )
+            it_purc_order_messsage = it_po_pending
+        IMPORTING
+            et_operation_package   = ct_po_deadletter ).
+      RETURN.
+    ENDIF.
+
+    lcl_utility=>prepare_operation_package(
+      EXPORTING
+          is_channel_assignments = VALUE #( lt_valid_assignments[ 1 ] OPTIONAL )
+          it_purc_order_messsage = it_po_pending
+      IMPORTING
+          et_operation_package   = et_po_for_approval ).
+
   ENDMETHOD.
 
   METHOD get_process_deadletter_route.
@@ -401,6 +461,33 @@ CLASS lcl_router IMPLEMENTATION.
     INTO TABLE @DATA(lt_process_deadletter_route).
 
     rs_process_deadletter_route =  VALUE #( lt_process_deadletter_route[ 1 ] OPTIONAL ).
+  ENDMETHOD.
+
+  METHOD validate_channel_assignments.
+
+    CLEAR: et_valid_assignments.
+
+    DATA(lv_simple_route_count) = 0.
+    LOOP AT it_channel_assignments TRANSPORTING NO FIELDS
+     WHERE channel = zpru_if_purc_order=>gcs_channel-po_order AND
+           route   = zpru_if_purc_order=>gcs_po_route-simple_router-approval_request.
+      lv_simple_route_count += 1.
+    ENDLOOP.
+
+    IF sy-subrc <> 0 OR lv_simple_route_count > 1.
+      RETURN.
+    ENDIF.
+
+    ASSIGN it_channel_assignments[
+        channel = zpru_if_purc_order=>gcs_channel-po_order
+        route   = zpru_if_purc_order=>gcs_po_route-simple_router-approval_request ] TO FIELD-SYMBOL(<ls_source_assignment>).
+    IF sy-subrc <> 0.
+      RETURN.
+    ENDIF.
+
+    APPEND INITIAL LINE TO et_valid_assignments ASSIGNING FIELD-SYMBOL(<ls_target_assignment>).
+    <ls_target_assignment> =  <ls_source_assignment>.
+
   ENDMETHOD.
 
 ENDCLASS.
