@@ -24,5 +24,6 @@ define view entity ZPurcOrderHdr
       status            as status,
       payment_terms     as paymentTerms,
       shipping_method   as shippingMethod,
+      control_timestamp as controlTimestamp,
       _items
 }

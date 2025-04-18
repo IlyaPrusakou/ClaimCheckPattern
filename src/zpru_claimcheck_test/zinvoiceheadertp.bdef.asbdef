@@ -16,17 +16,18 @@ authorization master ( instance )
 
   mapping for zinvoice_header
     {
-      InvoiceId       = invoice_id;
-      PurchaseOrderId = purchase_order_id;
-      InvoiceDate     = invoice_date;
-      DueDate         = due_date;
-      SupplierId      = supplier_id;
-      SupplierName    = supplier_name;
-      BuyerId         = buyer_id;
-      BuyerName       = buyer_name;
-      TotalAmount     = total_amount;
-      InvoiceCurrency = invoice_currency;
-      Status          = status;
+      InvoiceId        = invoice_id;
+      PurchaseOrderId  = purchase_order_id;
+      InvoiceDate      = invoice_date;
+      DueDate          = due_date;
+      SupplierId       = supplier_id;
+      SupplierName     = supplier_name;
+      BuyerId          = buyer_id;
+      BuyerName        = buyer_name;
+      TotalAmount      = total_amount;
+      InvoiceCurrency  = invoice_currency;
+      Status           = status;
+      ControlTimestamp = control_timestamp;
     }
 
 }

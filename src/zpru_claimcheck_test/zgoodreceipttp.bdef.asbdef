@@ -28,6 +28,7 @@ authorization master ( instance )
       TotalItems        = total_items;
       Status            = status;
       Remarks           = remarks;
+      ControlTimestamp  = control_timestamp;
     }
 
 }

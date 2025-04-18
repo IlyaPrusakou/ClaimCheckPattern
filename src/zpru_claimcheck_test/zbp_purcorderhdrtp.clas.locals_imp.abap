@@ -52,13 +52,11 @@ CLASS lsc_zpurcorderhdrtp IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    GET TIME STAMP FIELD DATA(lv_now).
-
     LOOP AT create-purchaseorder ASSIGNING FIELD-SYMBOL(<ls_order>).
       APPEND INITIAL LINE TO lt_payload ASSIGNING FIELD-SYMBOL(<ls_payload>).
       <ls_payload>-%key-purchaseorderid          = <ls_order>-purchaseorderid.
       <ls_payload>-%param-messageid              = generate_messageid( ).
-      <ls_payload>-%param-timestamp              = lv_now.
+      <ls_payload>-%param-timestamp              = <ls_order>-controlTimestamp.
       <ls_payload>-%param-sendersystem           = sy-sysid.
       <ls_payload>-%param-receiversystem         = get_receiversystem( ).
       <ls_payload>-%param-messagetype            = generate_message_type( ).

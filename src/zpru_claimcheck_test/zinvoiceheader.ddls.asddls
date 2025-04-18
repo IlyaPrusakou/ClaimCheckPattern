@@ -21,5 +21,7 @@ define view entity ZInvoiceHeader
       @Semantics.amount.currencyCode : 'InvoiceCurrency'
       total_amount      as TotalAmount,
       invoice_currency  as InvoiceCurrency,
-      status            as Status
+      status            as Status,
+      control_timestamp as ControlTimestamp
+
 }

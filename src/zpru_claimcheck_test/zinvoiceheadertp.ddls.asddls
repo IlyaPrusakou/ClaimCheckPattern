@@ -16,5 +16,6 @@ define root view entity ZInvoiceHeaderTP
       @Semantics.amount.currencyCode : 'InvoiceCurrency'
       TotalAmount,
       InvoiceCurrency,
-      Status
+      Status,
+      ControlTimestamp
 }

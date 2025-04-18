@@ -3,7 +3,7 @@
 @Metadata.ignorePropagatedAnnotations: true
 define root view entity ZPurcOrderHdrTP
   as select from ZPurcOrderHdr
-  composition of ZPurcOrderItemTP as _items
+  composition of exact one to many ZPurcOrderItemTP as _items
 {
   key purchaseOrderId,
       orderDate,
@@ -18,5 +18,6 @@ define root view entity ZPurcOrderHdrTP
       status,
       paymentTerms,
       shippingMethod,
+      controlTimestamp,
       _items
 }

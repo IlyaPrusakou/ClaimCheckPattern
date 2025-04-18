@@ -10,11 +10,20 @@ authorization master ( instance )
   update;
   delete;
 
-  field ( readonly : update ) Messageid;
-  field ( mandatory : create ) Messageid;
+  field ( readonly : update ) PersistencyId;
+  field ( mandatory : create ) PersistencyId;
 
   static action persistMessage deep table parameter ZPurcMessageHeader;
   static action processinvalidMessage deep table parameter ZPurcMessageHeader;
   static action processDeadLetter deep table parameter ZPurcMessageHeader;
 
+  mapping for zpru_chnl_store
+    {
+      PersistencyId    = persistency_id;
+      Messageid        = messageid;
+      PurchaseOrderId  = purchase_order_id;
+      Orderdate        = order_date;
+      Status           = status;
+      ControlTimestamp = control_timestamp;
+    }
 }

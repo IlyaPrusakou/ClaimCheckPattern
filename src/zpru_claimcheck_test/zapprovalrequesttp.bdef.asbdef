@@ -27,6 +27,7 @@ authorization master ( instance )
       ApprovalStatus    = approval_status;
       ApprovalDeadline  = approval_deadline;
       ApprovalNotes     = approval_notes;
+      ControlTimestamp  = control_timestamp;
     }
 
 }

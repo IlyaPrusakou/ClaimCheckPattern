@@ -9,6 +9,7 @@ CLASS zpru_test_via_abap DEFINITION
     METHODS test_raise.
     METHODS test_dyn_eml.
     METHODS insert_routes.
+    METHODS test_event_pipeline.
 
   PROTECTED SECTION.
   PRIVATE SECTION.
@@ -20,7 +21,189 @@ CLASS zpru_test_via_abap IMPLEMENTATION.
 
   METHOD if_oo_adt_classrun~main.
 
-    insert_routes( ).
+    test_event_pipeline( ).
+
+  ENDMETHOD.
+
+  METHOD test_event_pipeline.
+
+
+    DATA: lt_po_create TYPE TABLE FOR CREATE zpurcorderhdrproj.
+    DATA: lv_timestamp  TYPE timestampl,
+          lv_local_date TYPE d,
+          lv_local_time TYPE t,
+          lv_time_zone  TYPE cl_abap_context_info=>ty_time_zone.
+
+    lv_local_date = cl_abap_context_info=>get_system_date( ).
+    lv_local_time = cl_abap_context_info=>get_system_time( ).
+    TRY.
+        lv_time_zone = cl_abap_context_info=>get_user_time_zone( ).
+      CATCH cx_abap_context_info_error.
+        lv_time_zone = `UTC`.
+    ENDTRY.
+
+    CONVERT DATE lv_local_date TIME lv_local_time
+      INTO TIME STAMP lv_timestamp TIME ZONE lv_time_zone.
+
+    SELECT purchaseorderid
+    FROM zpurcorderhdr
+    ORDER BY    purchaseorderid DESCENDING
+    INTO @DATA(lv_last_id) UP TO 1 ROWS.
+      IF sy-subrc <> 0.
+        lv_last_id = 0.
+      ENDIF.
+    ENDSELECT.
+
+    lv_last_id = |{ lv_last_id ALPHA = OUT }|.
+
+    APPEND INITIAL LINE TO lt_po_create ASSIGNING FIELD-SYMBOL(<ls_po>).
+    " invalide bcz value supplier id
+    lv_last_id += 1.
+    <ls_po>-%cid            = lv_last_id.
+    <ls_po>-purchaseorderid = |{ lv_last_id ALPHA = IN }|.
+    <ls_po>-orderdate       = lv_local_date.
+    <ls_po>-supplierid      = `SUP001`.
+    <ls_po>-suppliername    = `Global Supplies Ltd.`.
+    <ls_po>-buyerid         = `BUY101`.
+    <ls_po>-buyername       = `Acme Industries`.
+    <ls_po>-totalamount     = `100.00`.
+    <ls_po>-headercurrency  = 'USD'.
+    <ls_po>-deliverydate    = lv_local_date.
+    <ls_po>-status          = zpru_if_purc_order=>gcs_po_status-approved.
+    <ls_po>-paymentterms    = zpru_if_purc_order=>gcs_po_payment_terms-prepaid.
+    <ls_po>-shippingmethod  = `Freight Shipping`.
+    <ls_po>-controltimestamp = lv_timestamp.
+
+    " valid prepaid APPROVED
+    lv_last_id += 1.
+    <ls_po>-%cid            = lv_last_id.
+    <ls_po>-purchaseorderid = |{ lv_last_id ALPHA = IN }|.
+    <ls_po>-orderdate       = lv_local_date.
+    <ls_po>-supplierid      = `SUP002`.
+    <ls_po>-suppliername    = `Acme Components Inc.`.
+    <ls_po>-buyerid         = `BUY101`.
+    <ls_po>-buyername       = `Acme Industries`.
+    <ls_po>-totalamount     = `100.00`.
+    <ls_po>-headercurrency  = 'USD'.
+    <ls_po>-deliverydate    = lv_local_date.
+    <ls_po>-status          = zpru_if_purc_order=>gcs_po_status-approved.
+    <ls_po>-paymentterms    = zpru_if_purc_order=>gcs_po_payment_terms-prepaid.
+    <ls_po>-shippingmethod  = `Freight Shipping`.
+    <ls_po>-controltimestamp = lv_timestamp.
+
+    " valid prepaid pending
+    lv_last_id += 1.
+    <ls_po>-%cid            = lv_last_id.
+    <ls_po>-purchaseorderid = |{ lv_last_id ALPHA = IN }|.
+    <ls_po>-orderdate       = lv_local_date.
+    <ls_po>-supplierid      = `SUP002`.
+    <ls_po>-suppliername    = `Acme Components Inc.`.
+    <ls_po>-buyerid         = `BUY101`.
+    <ls_po>-buyername       = `Acme Industries`.
+    <ls_po>-totalamount     = `100.00`.
+    <ls_po>-headercurrency  = 'USD'.
+    <ls_po>-deliverydate    = lv_local_date.
+    <ls_po>-status          = zpru_if_purc_order=>gcs_po_status-pending_approval.
+    <ls_po>-paymentterms    = zpru_if_purc_order=>gcs_po_payment_terms-prepaid.
+    <ls_po>-shippingmethod  = `Freight Shipping`.
+    <ls_po>-controltimestamp = lv_timestamp.
+
+    " valid postpaid APPROVED
+    lv_last_id += 1.
+    <ls_po>-%cid            = lv_last_id.
+    <ls_po>-purchaseorderid = |{ lv_last_id ALPHA = IN }|.
+    <ls_po>-orderdate       = lv_local_date.
+    <ls_po>-supplierid      = `SUP002`.
+    <ls_po>-suppliername    = `Acme Components Inc.`.
+    <ls_po>-buyerid         = `BUY101`.
+    <ls_po>-buyername       = `Acme Industries`.
+    <ls_po>-totalamount     = `100.00`.
+    <ls_po>-headercurrency  = 'USD'.
+    <ls_po>-deliverydate    = lv_local_date.
+    <ls_po>-status          = zpru_if_purc_order=>gcs_po_status-approved.
+    <ls_po>-paymentterms    = zpru_if_purc_order=>gcs_po_payment_terms-eom60.
+    <ls_po>-shippingmethod  = `Freight Shipping`.
+    <ls_po>-controltimestamp = lv_timestamp.
+
+    " valid postpaid APPROVED fall into dead letter bcz wrong payment terms
+    lv_last_id += 1.
+    <ls_po>-%cid            = lv_last_id.
+    <ls_po>-purchaseorderid = |{ lv_last_id ALPHA = IN }|.
+    <ls_po>-orderdate       = lv_local_date.
+    <ls_po>-supplierid      = `SUP002`.
+    <ls_po>-suppliername    = `Acme Components Inc.`.
+    <ls_po>-buyerid         = `BUY101`.
+    <ls_po>-buyername       = `Acme Industries`.
+    <ls_po>-totalamount     = `100.00`.
+    <ls_po>-headercurrency  = 'USD'.
+    <ls_po>-deliverydate    = lv_local_date.
+    <ls_po>-status          = zpru_if_purc_order=>gcs_po_status-approved.
+    <ls_po>-paymentterms    = `ERR`.
+    <ls_po>-shippingmethod  = `Freight Shipping`.
+    <ls_po>-controltimestamp = lv_timestamp.
+
+    MODIFY ENTITIES OF zpurcorderhdrproj
+       ENTITY purchaseorder
+       CREATE FIELDS (  purchaseorderid
+   orderdate
+   supplierid
+   suppliername
+   buyerid
+   buyername
+   totalamount
+   headercurrency
+   deliverydate
+   status
+   paymentterms
+   shippingmethod
+   controltimestamp ) WITH lt_po_create
+
+       MAPPED DATA(lt_mapped)
+       FAILED DATA(ls_failed)
+       REPORTED DATA(ls_reported).
+
+    IF ls_failed IS NOT INITIAL.
+      ROLLBACK ENTITIES.
+      RETURN.
+    ENDIF.
+
+    COMMIT ENTITIES
+    RESPONSES FAILED DATA(lt_failed_commit)
+    REPORTED DATA(lt_reported_commit).
+
+*supplier id
+*SUP001
+*SUP002
+*SUP003
+*SUP004
+*SUP005
+
+*supplier name
+*SUP001 - Global Supplies Ltd.
+*SUP002 - Acme Components Inc.
+*SUP003 - Prime Industrial Solutions
+*SUP004 - Continental Trade Corp.
+*SUP005 - Universal Manufacturing Co.
+
+
+*buyer id
+*BUY101
+*BUY202
+*BUY303
+*BUY404
+*BUY505
+
+*buyer name
+*BUY101: Acme Industries
+*BUY202: Stellar Solutions
+*BUY303: Orion Tech Corp
+*BUY404: Nova Enterprises
+*BUY505: Apex Innovations
+
+
+
+
+
 
   ENDMETHOD.
 

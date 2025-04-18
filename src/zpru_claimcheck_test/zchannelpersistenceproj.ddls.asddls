@@ -5,5 +5,10 @@ define root view entity ZChannelPersistenceProj
   provider contract transactional_interface
   as projection on ZChannelPersistenceTP
 {
-  key Messageid
+  key PersistencyId,
+      Messageid,
+      PurchaseOrderId,
+      Orderdate,
+      Status,
+      ControlTimestamp
 }

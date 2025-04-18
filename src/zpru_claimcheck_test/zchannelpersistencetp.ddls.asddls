@@ -10,5 +10,10 @@
 define root view entity ZChannelPersistenceTP
   as select from ZChannelPersistence
 {
-  key Messageid
+  key PersistencyId,
+      Messageid,
+      PurchaseOrderId,
+      Orderdate,
+      Status,
+      ControlTimestamp
 }

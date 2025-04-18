@@ -18,6 +18,7 @@ define root view entity ZPurcOrderHdrProj
       status,
       paymentTerms,
       shippingMethod,
+      controlTimestamp,
       /* Associations */
       _items : redirected to composition child ZPurcOrderItemProj
 }

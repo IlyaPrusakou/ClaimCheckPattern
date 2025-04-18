@@ -20,5 +20,6 @@ define view entity ZGoodReceipt
       received_by        as ReceivedBy,
       total_items        as TotalItems,
       status             as Status,
-      remarks            as Remarks
+      remarks            as Remarks,
+      control_timestamp  as ControlTimestamp
 }

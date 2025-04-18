@@ -19,5 +19,6 @@ define view entity ZApprovalRequest
       approver_name       as ApproverName,
       approval_status     as ApprovalStatus,
       approval_deadline   as ApprovalDeadline,
-      approval_notes      as ApprovalNotes
+      approval_notes      as ApprovalNotes,
+      control_timestamp   as ControlTimestamp
 }

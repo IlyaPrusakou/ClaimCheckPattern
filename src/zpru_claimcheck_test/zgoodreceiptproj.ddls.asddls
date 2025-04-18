@@ -15,5 +15,6 @@ define root view entity ZGoodReceiptProj
       ReceivedBy,
       TotalItems,
       Status,
-      Remarks
+      Remarks,
+      ControlTimestamp
 }

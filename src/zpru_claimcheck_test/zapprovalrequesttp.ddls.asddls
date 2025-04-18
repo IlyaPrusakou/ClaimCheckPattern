@@ -14,5 +14,6 @@ define root view entity ZApprovalRequestTP
       ApproverName,
       ApprovalStatus,
       ApprovalDeadline,
-      ApprovalNotes
+      ApprovalNotes,
+      ControlTimestamp
 }

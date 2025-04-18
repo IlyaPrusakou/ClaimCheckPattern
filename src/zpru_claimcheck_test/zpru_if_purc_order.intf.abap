@@ -6,7 +6,7 @@ INTERFACE zpru_if_purc_order
   TYPES: ts_channel_assignments TYPE zchannelrouteassignment.
   TYPES: tt_processinvalidmessage TYPE TABLE FOR ACTION IMPORT zchannelpersistencetp\\channelpersistence~processinvalidmessage.
   TYPES: ts_processinvalidmessage TYPE STRUCTURE FOR ACTION IMPORT zchannelpersistencetp\\channelpersistence~processinvalidmessage.
-  types: tt_processdeadletter TYPE TABLE FOR ACTION IMPORT zchannelpersistencetp\\channelpersistence~processdeadletter.
+  TYPES: tt_processdeadletter TYPE TABLE FOR ACTION IMPORT zchannelpersistencetp\\channelpersistence~processdeadletter.
   TYPES: ts_processdeadletter TYPE STRUCTURE FOR ACTION IMPORT zchannelpersistencetp\\channelpersistence~processdeadletter.
   TYPES: tt_supplier_id TYPE RANGE OF char10.
 
@@ -30,8 +30,8 @@ INTERFACE zpru_if_purc_order
   CONSTANTS: BEGIN OF gcs_po_route,
                BEGIN OF simple_router,
                  approval_request TYPE char3 VALUE `APR`,
-                 DEAD_LETTER      TYPE char3 VALUE `DLT`,
-                 INVALID_MESSAGE  TYPE char3 VALUE `INV`,
+                 dead_letter      TYPE char3 VALUE `DLT`,
+                 invalid_message  TYPE char3 VALUE `INV`,
                END OF simple_router,
                BEGIN OF payment_terms,
                  prepaid TYPE char3 VALUE `PRP`,
@@ -63,5 +63,11 @@ INTERFACE zpru_if_purc_order
   CONSTANTS: BEGIN OF gcs_message_type,
                po_document TYPE string VALUE `PO_DOCUMENT`,
              END OF gcs_message_type.
+
+  CONSTANTS: BEGIN OF gcs_storage_type,
+               invalide_message TYPE char1 VALUE `I`,
+               dead_letter      TYPE char1 VALUE `D`,
+               persist_message  TYPE char1 VALUE `P`,
+             END OF gcs_storage_type.
 
 ENDINTERFACE.

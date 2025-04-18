@@ -21,12 +21,136 @@ CLASS lhc_channelpersistence IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD persistmessage.
+    DATA: lt_approval_create TYPE TABLE FOR CREATE zchannelpersistencetp.
+
+    IF keys IS INITIAL.
+      RETURN.
+    ENDIF.
+
+    SELECT persistencyid
+    FROM zchannelpersistence
+    ORDER BY persistencyid DESCENDING
+    INTO @DATA(lv_last_id) UP TO 1 ROWS.
+      IF sy-subrc <> 0.
+        lv_last_id = 0.
+      ENDIF.
+    ENDSELECT.
+
+    lv_last_id = |{ lv_last_id ALPHA = OUT }|.
+
+    LOOP AT keys ASSIGNING FIELD-SYMBOL(<ls_input>).
+      LOOP AT <ls_input>-%param ASSIGNING FIELD-SYMBOL(<ls_param>).
+        APPEND INITIAL LINE TO lt_approval_create ASSIGNING FIELD-SYMBOL(<ls_create>).
+        <ls_create>-%cid            = <ls_input>-%cid.
+        lv_last_id += 1.
+        <ls_create>-persistencyid   = |{ lv_last_id ALPHA = IN }|.
+        <ls_create>-%data-messageid = <ls_param>-messageid.
+        <ls_create>-purchaseorderid = <ls_param>-header-purchaseorderid.
+        <ls_create>-%data-orderdate = <ls_param>-header-orderdate.
+        <ls_create>-%data-status    = zpru_if_purc_order=>gcs_storage_type-persist_message.
+        <ls_create>-%data-controltimestamp = <ls_param>-timestamp.
+      ENDLOOP.
+    ENDLOOP.
+
+    MODIFY ENTITIES OF zchannelpersistencetp
+    IN LOCAL MODE
+    ENTITY channelpersistence
+    CREATE FIELDS ( persistencyid
+                    messageid
+                    purchaseorderid
+                    orderdate
+                    status
+                    controltimestamp )
+    WITH lt_approval_create.
   ENDMETHOD.
 
   METHOD processdeadletter.
+    DATA: lt_approval_create TYPE TABLE FOR CREATE zchannelpersistencetp.
+
+    IF keys IS INITIAL.
+      RETURN.
+    ENDIF.
+
+    SELECT persistencyid
+    FROM zchannelpersistence
+    ORDER BY persistencyid DESCENDING
+    INTO @DATA(lv_last_id) UP TO 1 ROWS.
+      IF sy-subrc <> 0.
+        lv_last_id = 0.
+      ENDIF.
+    ENDSELECT.
+
+    lv_last_id = |{ lv_last_id ALPHA = OUT }|.
+
+    LOOP AT keys ASSIGNING FIELD-SYMBOL(<ls_input>).
+      LOOP AT <ls_input>-%param ASSIGNING FIELD-SYMBOL(<ls_param>).
+        APPEND INITIAL LINE TO lt_approval_create ASSIGNING FIELD-SYMBOL(<ls_create>).
+        <ls_create>-%cid            = <ls_input>-%cid.
+        lv_last_id += 1.
+        <ls_create>-persistencyid   = |{ lv_last_id ALPHA = IN }|.
+        <ls_create>-%data-messageid = <ls_param>-messageid.
+        <ls_create>-purchaseorderid = <ls_param>-header-purchaseorderid.
+        <ls_create>-%data-orderdate = <ls_param>-header-orderdate.
+        <ls_create>-%data-status    = zpru_if_purc_order=>gcs_storage_type-dead_letter.
+        <ls_create>-%data-controltimestamp = <ls_param>-timestamp.
+      ENDLOOP.
+    ENDLOOP.
+
+    MODIFY ENTITIES OF zchannelpersistencetp
+    IN LOCAL MODE
+    ENTITY channelpersistence
+    CREATE FIELDS ( persistencyid
+                    messageid
+                    purchaseorderid
+                    orderdate
+                    status
+                    controltimestamp )
+    WITH lt_approval_create.
+
   ENDMETHOD.
 
   METHOD processinvalidmessage.
+    DATA: lt_approval_create TYPE TABLE FOR CREATE zchannelpersistencetp.
+
+    IF keys IS INITIAL.
+      RETURN.
+    ENDIF.
+
+    SELECT persistencyid
+    FROM zchannelpersistence
+    ORDER BY persistencyid DESCENDING
+    INTO @DATA(lv_last_id) UP TO 1 ROWS.
+      IF sy-subrc <> 0.
+        lv_last_id = 0.
+      ENDIF.
+    ENDSELECT.
+
+    lv_last_id = |{ lv_last_id ALPHA = OUT }|.
+
+    LOOP AT keys ASSIGNING FIELD-SYMBOL(<ls_input>).
+      LOOP AT <ls_input>-%param ASSIGNING FIELD-SYMBOL(<ls_param>).
+        APPEND INITIAL LINE TO lt_approval_create ASSIGNING FIELD-SYMBOL(<ls_create>).
+        <ls_create>-%cid            = <ls_input>-%cid.
+        lv_last_id += 1.
+        <ls_create>-persistencyid   = |{ lv_last_id ALPHA = IN }|.
+        <ls_create>-%data-messageid = <ls_param>-messageid.
+        <ls_create>-purchaseorderid = <ls_param>-header-purchaseorderid.
+        <ls_create>-%data-orderdate = <ls_param>-header-orderdate.
+        <ls_create>-%data-status    = zpru_if_purc_order=>gcs_storage_type-invalide_message.
+        <ls_create>-%data-controltimestamp = <ls_param>-timestamp.
+      ENDLOOP.
+    ENDLOOP.
+
+    MODIFY ENTITIES OF zchannelpersistencetp
+    IN LOCAL MODE
+    ENTITY channelpersistence
+    CREATE FIELDS ( persistencyid
+                    messageid
+                    purchaseorderid
+                    orderdate
+                    status
+                    controltimestamp )
+    WITH lt_approval_create.
   ENDMETHOD.
 
 ENDCLASS.

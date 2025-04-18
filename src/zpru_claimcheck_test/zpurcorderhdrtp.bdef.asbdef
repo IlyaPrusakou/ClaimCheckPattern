@@ -19,18 +19,19 @@ authorization master ( instance )
 
   mapping for zpurc_order_hdr
     {
-      purchaseOrderId = purchase_order_id;
-      orderDate       = order_date;
-      supplierId      = supplier_id;
-      supplierName    = supplier_name;
-      buyerId         = buyer_id;
-      buyerName       = buyer_name;
-      totalAmount     = total_amount;
-      headerCurrency  = header_currency;
-      deliveryDate    = delivery_date;
-      status          = status;
-      paymentTerms    = payment_terms;
-      shippingMethod  = shipping_method;
+      purchaseOrderId  = purchase_order_id;
+      orderDate        = order_date;
+      supplierId       = supplier_id;
+      supplierName     = supplier_name;
+      buyerId          = buyer_id;
+      buyerName        = buyer_name;
+      totalAmount      = total_amount;
+      headerCurrency   = header_currency;
+      deliveryDate     = delivery_date;
+      status           = status;
+      paymentTerms     = payment_terms;
+      shippingMethod   = shipping_method;
+      controlTimestamp = control_timestamp;
     }
 }
 
