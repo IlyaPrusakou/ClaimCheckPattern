@@ -72,12 +72,14 @@ ENDCLASS.
 CLASS lcl_utility DEFINITION.
   PUBLIC SECTION.
 
+    CLASS-DATA: mv_last_cid TYPE int8 VALUE '1'.
+
     CLASS-METHODS prepare_operation_package
       IMPORTING
         is_channel_assignments TYPE zchannelrouteassignment
         it_purc_order_messsage TYPE zpru_if_purc_order=>tt_purc_order_message
-      EXPORTING
-        et_operation_package   TYPE abp_behv_changes_tab.
+      CHANGING
+        ct_operation_package   TYPE abp_behv_changes_tab.
 
     CLASS-METHODS get_deadletter_route
       RETURNING
@@ -175,12 +177,12 @@ CLASS lcl_local_event_consumption IMPLEMENTATION.
           it_po_deadletter = lt_po_deadletter ).
 
     " Publish-Subscribe
-    " 1.Invoice creation
+    " 1. Good Receipt creation
     lo_channel->send_2_receiver(
       EXPORTING
           it_operation_package = lt_po_prepaid ).
 
-    " 2.Good Receipt creation
+    " 2. Invoice creation
     lo_channel->send_2_receiver(
       EXPORTING
           it_operation_package = lt_po_postpaid ).
@@ -229,8 +231,8 @@ CLASS lcl_channel IMPLEMENTATION.
             EXPORTING
                 is_channel_assignments = lcl_utility=>get_invalid_message_route( )
                 it_purc_order_messsage = lt_po_invalidated
-            IMPORTING
-                et_operation_package   = ct_po_invalidated ).
+            CHANGING
+                ct_operation_package   = ct_po_invalidated ).
     ENDIF.
 
   ENDMETHOD.
@@ -331,8 +333,8 @@ CLASS lcl_router IMPLEMENTATION.
             EXPORTING
                 is_channel_assignments = lcl_utility=>get_invalid_message_route( )
                 it_purc_order_messsage = lt_po_invalidated
-            IMPORTING
-                et_operation_package   = ct_po_invalidated ).
+            CHANGING
+                ct_operation_package   = ct_po_invalidated ).
     ENDIF.
   ENDMETHOD.
 
@@ -347,8 +349,8 @@ CLASS lcl_router IMPLEMENTATION.
         EXPORTING
             is_channel_assignments = lcl_utility=>get_deadletter_route( )
             it_purc_order_messsage = it_po_approved
-        IMPORTING
-            et_operation_package   = ct_po_deadletter ).
+        CHANGING
+            ct_operation_package   = ct_po_deadletter ).
       RETURN.
     ENDIF.
 
@@ -377,15 +379,15 @@ CLASS lcl_router IMPLEMENTATION.
           EXPORTING
               is_channel_assignments = <ls_channel_assignment>
               it_purc_order_messsage = lt_po_prepaid
-          IMPORTING
-              et_operation_package   = et_po_prepaid ).
+          CHANGING
+              ct_operation_package   = et_po_prepaid ).
       ELSE.
         lcl_utility=>prepare_operation_package(
        EXPORTING
            is_channel_assignments = lcl_utility=>get_deadletter_route( )
            it_purc_order_messsage = lt_po_prepaid
-       IMPORTING
-           et_operation_package   = ct_po_deadletter ).
+       CHANGING
+           ct_operation_package   = ct_po_deadletter ).
       ENDIF.
     ENDIF.
 
@@ -398,15 +400,15 @@ CLASS lcl_router IMPLEMENTATION.
           EXPORTING
               is_channel_assignments = <ls_channel_assignment>
               it_purc_order_messsage = lt_po_postpaid
-          IMPORTING
-              et_operation_package   = et_po_postpaid ).
+          CHANGING
+              ct_operation_package   = et_po_postpaid ).
       ELSE.
         lcl_utility=>prepare_operation_package(
           EXPORTING
               is_channel_assignments = lcl_utility=>get_deadletter_route( )
               it_purc_order_messsage = lt_po_postpaid
-          IMPORTING
-              et_operation_package   = ct_po_deadletter ).
+          CHANGING
+              ct_operation_package   = ct_po_deadletter ).
       ENDIF.
     ENDIF.
 
@@ -415,8 +417,8 @@ CLASS lcl_router IMPLEMENTATION.
         EXPORTING
             is_channel_assignments = lcl_utility=>get_deadletter_route( )
             it_purc_order_messsage = lt_po_no_route
-        IMPORTING
-            et_operation_package   = ct_po_deadletter ).
+        CHANGING
+            ct_operation_package   = ct_po_deadletter ).
     ENDIF.
 
   ENDMETHOD.
@@ -440,8 +442,8 @@ CLASS lcl_router IMPLEMENTATION.
         EXPORTING
             is_channel_assignments = lcl_utility=>get_deadletter_route( )
             it_purc_order_messsage = it_po_pending
-        IMPORTING
-            et_operation_package   = ct_po_deadletter ).
+        CHANGING
+            ct_operation_package   = ct_po_deadletter ).
       RETURN.
     ENDIF.
 
@@ -449,8 +451,8 @@ CLASS lcl_router IMPLEMENTATION.
       EXPORTING
           is_channel_assignments = VALUE #( lt_valid_assignments[ 1 ] OPTIONAL )
           it_purc_order_messsage = it_po_pending
-      IMPORTING
-          et_operation_package   = et_po_for_approval ).
+      CHANGING
+          ct_operation_package   = et_po_for_approval ).
 
   ENDMETHOD.
 
@@ -465,8 +467,6 @@ CLASS lcl_utility IMPLEMENTATION.
     FIELD-SYMBOLS: <lt_action_tab> TYPE INDEX TABLE.
     FIELD-SYMBOLS: <lt_param_tab> TYPE zpru_if_purc_order=>tt_purc_order_message.
     FIELD-SYMBOLS: <ls_param> TYPE zpru_if_purc_order=>ts_purc_order_message.
-
-    CLEAR: et_operation_package.
 
     lv_type_name = `\BDEF=` && |{ is_channel_assignments-businessobject }| &&
                    `\ENTITY=` && |{ is_channel_assignments-businessobjectentity }| &&
@@ -486,8 +486,8 @@ CLASS lcl_utility IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    zpru_cl_purchase_order_broker=>mv_last_cid += 1.
-    <ls_cid> = zpru_cl_purchase_order_broker=>mv_last_cid.
+    lcl_utility=>mv_last_cid += 1.
+    <ls_cid> = lcl_utility=>mv_last_cid.
 
     ASSIGN COMPONENT '%PARAM' OF STRUCTURE <ls_entry> TO <lt_param_tab>.
     IF sy-subrc <> 0.
@@ -499,7 +499,7 @@ CLASS lcl_utility IMPLEMENTATION.
       <ls_param> = CORRESPONDING #( DEEP <ls_po_message> ).
     ENDLOOP.
 
-    APPEND INITIAL LINE TO et_operation_package ASSIGNING FIELD-SYMBOL(<ls_operation>).
+    APPEND INITIAL LINE TO ct_operation_package ASSIGNING FIELD-SYMBOL(<ls_operation>).
     <ls_operation>-op          = if_abap_behv=>op-m-action.
     <ls_operation>-entity_name = is_channel_assignments-businessobjectentity.
     <ls_operation>-sub_name    = is_channel_assignments-businessobjectaction.
