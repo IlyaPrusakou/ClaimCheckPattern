@@ -17,6 +17,8 @@ ENDCLASS.
 CLASS lhc_goodreceipt DEFINITION INHERITING FROM cl_abap_behavior_handler.
   PRIVATE SECTION.
 
+    CLASS-DATA: mv_last_id TYPE i.
+
     METHODS get_instance_authorizations FOR INSTANCE AUTHORIZATION
       IMPORTING keys REQUEST requested_authorizations FOR goodreceipt RESULT result.
 
@@ -46,6 +48,10 @@ CLASS lhc_goodreceipt IMPLEMENTATION.
       ENDIF.
     ENDSELECT.
 
+    IF lhc_goodreceipt=>mv_last_id > lv_last_id.
+      lv_last_id = lhc_goodreceipt=>mv_last_id.
+    ENDIF.
+
     lv_last_id = |{ lv_last_id ALPHA = OUT }|.
 
     LOOP AT keys ASSIGNING FIELD-SYMBOL(<ls_input>).
@@ -57,6 +63,7 @@ CLASS lhc_goodreceipt IMPLEMENTATION.
         <ls_create>-purchaseorderid        = <ls_param>-header-purchaseorderid.
         <ls_create>-%data-receiptdate      = <ls_param>-header-orderdate.
         <ls_create>-%data-controltimestamp = <ls_param>-timestamp.
+        lhc_goodreceipt=>mv_last_id =  lv_last_id.
       ENDLOOP.
     ENDLOOP.
 

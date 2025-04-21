@@ -17,6 +17,8 @@ ENDCLASS.
 CLASS lhc_invoice DEFINITION INHERITING FROM cl_abap_behavior_handler.
   PRIVATE SECTION.
 
+    CLASS-DATA: mv_last_id TYPE i.
+
     METHODS get_instance_authorizations FOR INSTANCE AUTHORIZATION
       IMPORTING keys REQUEST requested_authorizations FOR invoice RESULT result.
 
@@ -47,6 +49,11 @@ CLASS lhc_invoice IMPLEMENTATION.
       ENDIF.
     ENDSELECT.
 
+    IF lhc_invoice=>mv_last_id > lv_last_id.
+      lv_last_id = lhc_invoice=>mv_last_id.
+    ENDIF.
+
+
     lv_last_id = |{ lv_last_id ALPHA = OUT }|.
 
     LOOP AT keys ASSIGNING FIELD-SYMBOL(<ls_input>).
@@ -58,6 +65,7 @@ CLASS lhc_invoice IMPLEMENTATION.
         <ls_create>-purchaseorderid        = <ls_param>-header-purchaseorderid.
         <ls_create>-%data-invoicedate      = <ls_param>-header-orderdate.
         <ls_create>-%data-controltimestamp = <ls_param>-timestamp.
+        lhc_invoice=>mv_last_id = lv_last_id.
       ENDLOOP.
     ENDLOOP.
 

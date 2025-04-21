@@ -17,6 +17,9 @@ ENDCLASS.
 CLASS lhc_channelpersistence DEFINITION INHERITING FROM cl_abap_behavior_handler.
   PRIVATE SECTION.
 
+    CLASS-DATA: mv_last_id TYPE i.
+
+
     METHODS get_instance_authorizations FOR INSTANCE AUTHORIZATION
       IMPORTING keys REQUEST requested_authorizations FOR channelpersistence RESULT result.
 
@@ -52,6 +55,10 @@ CLASS lhc_channelpersistence IMPLEMENTATION.
       ENDIF.
     ENDSELECT.
 
+    IF lhc_channelpersistence=>mv_last_id > lv_last_id.
+      lv_last_id = lhc_channelpersistence=>mv_last_id.
+    ENDIF.
+
     lv_last_id = |{ lv_last_id ALPHA = OUT }|.
 
     LOOP AT keys ASSIGNING FIELD-SYMBOL(<ls_input>).
@@ -65,6 +72,7 @@ CLASS lhc_channelpersistence IMPLEMENTATION.
         <ls_create>-%data-orderdate = <ls_param>-header-orderdate.
         <ls_create>-%data-status    = zpru_if_purc_order=>gcs_storage_type-persist_message.
         <ls_create>-%data-controltimestamp = <ls_param>-timestamp.
+        lhc_channelpersistence=>mv_last_id = lv_last_id.
       ENDLOOP.
     ENDLOOP.
 
@@ -96,6 +104,10 @@ CLASS lhc_channelpersistence IMPLEMENTATION.
       ENDIF.
     ENDSELECT.
 
+    IF lhc_channelpersistence=>mv_last_id > lv_last_id.
+      lv_last_id = lhc_channelpersistence=>mv_last_id.
+    ENDIF.
+
     lv_last_id = |{ lv_last_id ALPHA = OUT }|.
 
     LOOP AT keys ASSIGNING FIELD-SYMBOL(<ls_input>).
@@ -109,6 +121,7 @@ CLASS lhc_channelpersistence IMPLEMENTATION.
         <ls_create>-%data-orderdate = <ls_param>-header-orderdate.
         <ls_create>-%data-status    = zpru_if_purc_order=>gcs_storage_type-dead_letter.
         <ls_create>-%data-controltimestamp = <ls_param>-timestamp.
+        lhc_channelpersistence=>mv_last_id = lv_last_id.
       ENDLOOP.
     ENDLOOP.
 
@@ -141,6 +154,10 @@ CLASS lhc_channelpersistence IMPLEMENTATION.
       ENDIF.
     ENDSELECT.
 
+    IF lhc_channelpersistence=>mv_last_id > lv_last_id.
+      lv_last_id = lhc_channelpersistence=>mv_last_id.
+    ENDIF.
+
     lv_last_id = |{ lv_last_id ALPHA = OUT }|.
 
     LOOP AT keys ASSIGNING FIELD-SYMBOL(<ls_input>).
@@ -154,6 +171,7 @@ CLASS lhc_channelpersistence IMPLEMENTATION.
         <ls_create>-%data-orderdate        = <ls_param>-header-orderdate.
         <ls_create>-%data-status           = zpru_if_purc_order=>gcs_storage_type-invalide_message.
         <ls_create>-%data-controltimestamp = <ls_param>-timestamp.
+        lhc_channelpersistence=>mv_last_id = lv_last_id.
       ENDLOOP.
     ENDLOOP.
 
