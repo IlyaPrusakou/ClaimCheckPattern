@@ -65,16 +65,6 @@ CLASS lcl_router DEFINITION.
       CHANGING
         ct_po_deadletter       TYPE abp_behv_changes_tab.
 
-    METHODS get_process_deadletter_route
-      RETURNING
-        VALUE(rs_process_deadletter_route) TYPE zpru_if_purc_order=>ts_channel_assignments.
-
-    METHODS validate_channel_assignments
-      IMPORTING
-        it_channel_assignments TYPE zpru_if_purc_order=>tt_channel_assignments
-      EXPORTING
-        et_valid_assignments   TYPE zpru_if_purc_order=>tt_channel_assignments.
-
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -88,6 +78,21 @@ CLASS lcl_utility DEFINITION.
         it_purc_order_messsage TYPE zpru_if_purc_order=>tt_purc_order_message
       EXPORTING
         et_operation_package   TYPE abp_behv_changes_tab.
+
+    CLASS-METHODS get_deadletter_route
+      RETURNING
+        VALUE(rs_deadletter_route) TYPE zpru_if_purc_order=>ts_channel_assignments.
+
+    CLASS-METHODS get_invalid_message_route
+      RETURNING
+        VALUE(rs_invalid_message_route) TYPE zpru_if_purc_order=>ts_channel_assignments.
+
+    CLASS-METHODS validate_channel_assignments
+      IMPORTING
+        iv_simple_route        TYPE char3
+        it_channel_assignments TYPE zpru_if_purc_order=>tt_channel_assignments
+      EXPORTING
+        et_valid_assignments   TYPE zpru_if_purc_order=>tt_channel_assignments.
 
   PROTECTED SECTION.
   PRIVATE SECTION.
@@ -185,11 +190,6 @@ CLASS lcl_local_event_consumption IMPLEMENTATION.
       EXPORTING
           it_operation_package = lt_po_for_approval ).
 
-*    cl_abap_tx=>save( ).
-
-*    COMMIT ENTITIES RESPONSes FAILED data(ls_failed) REPORTED data(ls_reported).
-*    COMMIT WORK.
-
   ENDMETHOD.
 
 ENDCLASS.
@@ -197,6 +197,8 @@ ENDCLASS.
 CLASS lcl_channel IMPLEMENTATION.
 
   METHOD filter_by_supplier_id.
+
+    DATA: lt_po_invalidated LIKE ct_po_approved.
 
     DATA: lt_processinvalidmessage TYPE zpru_if_purc_order=>tt_processinvalidmessage.
     FIELD-SYMBOLS: <ls_processinvalidmessage> TYPE zpru_if_purc_order=>ts_processinvalidmessage.
@@ -206,44 +208,29 @@ CLASS lcl_channel IMPLEMENTATION.
 
     LOOP AT lt_po_approved ASSIGNING FIELD-SYMBOL(<ls_po_approved>).
       IF <ls_po_approved>-header-supplierid IN get_black_list( ).
-        IF <ls_processinvalidmessage> IS NOT ASSIGNED.
-          APPEND INITIAL LINE TO lt_processinvalidmessage ASSIGNING <ls_processinvalidmessage>.
-          APPEND INITIAL LINE TO <ls_processinvalidmessage>-%param ASSIGNING FIELD-SYMBOL(<ls_param>).
-          <ls_param> = CORRESPONDING #( DEEP <ls_po_approved> ).
-          <ls_processinvalidmessage>-%cid = zpru_cl_purchase_order_broker=>mv_last_cid + 1.
-        ELSE.
-          APPEND INITIAL LINE TO <ls_processinvalidmessage>-%param ASSIGNING <ls_param>.
-          <ls_param> = CORRESPONDING #( DEEP <ls_po_approved> ).
-        ENDIF.
+        APPEND INITIAL LINE TO lt_po_invalidated ASSIGNING FIELD-SYMBOL(<ls_po_invalidated>).
+        <ls_po_invalidated> = CORRESPONDING #( DEEP <ls_po_approved> ).
 
         DELETE ct_po_approved WHERE table_line = <ls_po_approved>.
-
       ENDIF.
     ENDLOOP.
 
     LOOP AT lt_po_pending ASSIGNING FIELD-SYMBOL(<ls_po_pending>).
       IF <ls_po_pending>-header-supplierid IN get_black_list( ).
-        IF <ls_processinvalidmessage> IS NOT ASSIGNED.
-          APPEND INITIAL LINE TO lt_processinvalidmessage ASSIGNING <ls_processinvalidmessage>.
-          APPEND INITIAL LINE TO <ls_processinvalidmessage>-%param ASSIGNING <ls_param>.
-          <ls_param> = CORRESPONDING #( DEEP <ls_po_pending> ).
-          <ls_processinvalidmessage>-%cid = zpru_cl_purchase_order_broker=>mv_last_cid + 1.
-        ELSE.
-          APPEND INITIAL LINE TO <ls_processinvalidmessage>-%param ASSIGNING <ls_param>.
-          <ls_param> = CORRESPONDING #( DEEP <ls_po_pending> ).
-        ENDIF.
+        APPEND INITIAL LINE TO lt_po_invalidated ASSIGNING <ls_po_invalidated>.
+        <ls_po_invalidated> = CORRESPONDING #( DEEP <ls_po_pending> ).
 
         DELETE ct_po_pending WHERE table_line = <ls_po_pending>.
-
       ENDIF.
     ENDLOOP.
 
-    IF lt_processinvalidmessage IS NOT INITIAL.
-      APPEND INITIAL LINE TO ct_po_invalidated ASSIGNING FIELD-SYMBOL(<ls_po_invalidated>).
-      <ls_po_invalidated>-op          = if_abap_behv=>op-m-action.
-      <ls_po_invalidated>-entity_name = zpru_if_purc_order=>gcs_entity_name-message_store.
-      <ls_po_invalidated>-sub_name    = zpru_if_purc_order=>gcs_action_reciver-processinvalidmessage.
-      <ls_po_invalidated>-instances   = NEW zpru_if_purc_order=>tt_processinvalidmessage( lt_processinvalidmessage ).
+    IF lt_po_invalidated IS NOT INITIAL.
+      lcl_utility=>prepare_operation_package(
+            EXPORTING
+                is_channel_assignments = lcl_utility=>get_invalid_message_route( )
+                it_purc_order_messsage = lt_po_invalidated
+            IMPORTING
+                et_operation_package   = ct_po_invalidated ).
     ENDIF.
 
   ENDMETHOD.
@@ -319,8 +306,7 @@ ENDCLASS.
 CLASS lcl_router IMPLEMENTATION.
   METHOD split_po_by_status.
 
-    DATA: lt_processinvalidmessage TYPE zpru_if_purc_order=>tt_processinvalidmessage.
-    FIELD-SYMBOLS: <ls_processinvalidmessage> TYPE zpru_if_purc_order=>ts_processinvalidmessage.
+    DATA: lt_po_invalidated LIKE et_po_approved.
 
     CLEAR: et_po_approved, et_po_pending.
 
@@ -335,26 +321,19 @@ CLASS lcl_router IMPLEMENTATION.
           APPEND INITIAL LINE TO et_po_pending ASSIGNING FIELD-SYMBOL(<ls_po_pending>).
           <ls_po_pending> = CORRESPONDING #( DEEP <ls_po> ).
         WHEN OTHERS.
-          IF <ls_processinvalidmessage> IS NOT ASSIGNED.
-            APPEND INITIAL LINE TO lt_processinvalidmessage ASSIGNING <ls_processinvalidmessage>.
-            APPEND INITIAL LINE TO <ls_processinvalidmessage>-%param ASSIGNING FIELD-SYMBOL(<ls_param>).
-            <ls_param> = CORRESPONDING #( DEEP <ls_po> ).
-            <ls_processinvalidmessage>-%cid = zpru_cl_purchase_order_broker=>mv_last_cid + 1.
-          ELSE.
-            APPEND INITIAL LINE TO <ls_processinvalidmessage>-%param ASSIGNING <ls_param>.
-            <ls_param> = CORRESPONDING #( DEEP <ls_po> ).
-          ENDIF.
+          APPEND INITIAL LINE TO lt_po_invalidated ASSIGNING FIELD-SYMBOL(<ls_po_invalidated>).
+          <ls_po_invalidated> = CORRESPONDING #( DEEP <ls_po> ).
       ENDCASE.
     ENDLOOP.
 
-    IF lt_processinvalidmessage IS NOT INITIAL.
-      APPEND INITIAL LINE TO ct_po_invalidated ASSIGNING FIELD-SYMBOL(<ls_po_invalidated>).
-      <ls_po_invalidated>-op = if_abap_behv=>op-m-action.
-      <ls_po_invalidated>-entity_name = zpru_if_purc_order=>gcs_entity_name-message_store.
-      <ls_po_invalidated>-sub_name    = zpru_if_purc_order=>gcs_action_reciver-processinvalidmessage.
-      <ls_po_invalidated>-instances   = NEW zpru_if_purc_order=>tt_processinvalidmessage( lt_processinvalidmessage ).
+    IF lt_po_invalidated IS NOT INITIAL.
+      lcl_utility=>prepare_operation_package(
+            EXPORTING
+                is_channel_assignments = lcl_utility=>get_invalid_message_route( )
+                it_purc_order_messsage = lt_po_invalidated
+            IMPORTING
+                et_operation_package   = ct_po_invalidated ).
     ENDIF.
-
   ENDMETHOD.
 
   METHOD route_approved_po_paymentterms.
@@ -366,7 +345,7 @@ CLASS lcl_router IMPLEMENTATION.
     IF it_channel_assignments IS INITIAL.
       lcl_utility=>prepare_operation_package(
         EXPORTING
-            is_channel_assignments = get_process_deadletter_route( )
+            is_channel_assignments = lcl_utility=>get_deadletter_route( )
             it_purc_order_messsage = it_po_approved
         IMPORTING
             et_operation_package   = ct_po_deadletter ).
@@ -403,7 +382,7 @@ CLASS lcl_router IMPLEMENTATION.
       ELSE.
         lcl_utility=>prepare_operation_package(
        EXPORTING
-           is_channel_assignments = get_process_deadletter_route( )
+           is_channel_assignments = lcl_utility=>get_deadletter_route( )
            it_purc_order_messsage = lt_po_prepaid
        IMPORTING
            et_operation_package   = ct_po_deadletter ).
@@ -424,7 +403,7 @@ CLASS lcl_router IMPLEMENTATION.
       ELSE.
         lcl_utility=>prepare_operation_package(
           EXPORTING
-              is_channel_assignments = get_process_deadletter_route( )
+              is_channel_assignments = lcl_utility=>get_deadletter_route( )
               it_purc_order_messsage = lt_po_postpaid
           IMPORTING
               et_operation_package   = ct_po_deadletter ).
@@ -434,7 +413,7 @@ CLASS lcl_router IMPLEMENTATION.
     IF lt_po_no_route IS NOT INITIAL.
       lcl_utility=>prepare_operation_package(
         EXPORTING
-            is_channel_assignments = get_process_deadletter_route( )
+            is_channel_assignments = lcl_utility=>get_deadletter_route( )
             it_purc_order_messsage = lt_po_no_route
         IMPORTING
             et_operation_package   = ct_po_deadletter ).
@@ -449,8 +428,9 @@ CLASS lcl_router IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    validate_channel_assignments(
+    lcl_utility=>validate_channel_assignments(
           EXPORTING
+            iv_simple_route        = zpru_if_purc_order=>gcs_po_route-simple_router-approval_request
             it_channel_assignments = it_channel_assignments
           IMPORTING
             et_valid_assignments   = DATA(lt_valid_assignments) ).
@@ -458,7 +438,7 @@ CLASS lcl_router IMPLEMENTATION.
     IF lt_valid_assignments IS INITIAL.
       lcl_utility=>prepare_operation_package(
         EXPORTING
-            is_channel_assignments = get_process_deadletter_route( )
+            is_channel_assignments = lcl_utility=>get_deadletter_route( )
             it_purc_order_messsage = it_po_pending
         IMPORTING
             et_operation_package   = ct_po_deadletter ).
@@ -471,43 +451,6 @@ CLASS lcl_router IMPLEMENTATION.
           it_purc_order_messsage = it_po_pending
       IMPORTING
           et_operation_package   = et_po_for_approval ).
-
-  ENDMETHOD.
-
-  METHOD get_process_deadletter_route.
-    SELECT *
-    FROM zchannelrouteassignment
-    WHERE channel = @zpru_if_purc_order=>gcs_channel-po_order
-    AND   route   = @zpru_if_purc_order=>gcs_po_route-simple_router-dead_letter
-    INTO TABLE @DATA(lt_process_deadletter_route).
-
-    rs_process_deadletter_route =  VALUE #( lt_process_deadletter_route[ 1 ] OPTIONAL ).
-  ENDMETHOD.
-
-  METHOD validate_channel_assignments.
-
-    CLEAR: et_valid_assignments.
-
-    DATA(lv_simple_route_count) = 0.
-    LOOP AT it_channel_assignments TRANSPORTING NO FIELDS
-     WHERE channel = zpru_if_purc_order=>gcs_channel-po_order AND
-           route   = zpru_if_purc_order=>gcs_po_route-simple_router-approval_request.
-      lv_simple_route_count += 1.
-    ENDLOOP.
-
-    IF sy-subrc <> 0 OR lv_simple_route_count > 1.
-      RETURN.
-    ENDIF.
-
-    ASSIGN it_channel_assignments[
-        channel = zpru_if_purc_order=>gcs_channel-po_order
-        route   = zpru_if_purc_order=>gcs_po_route-simple_router-approval_request ] TO FIELD-SYMBOL(<ls_source_assignment>).
-    IF sy-subrc <> 0.
-      RETURN.
-    ENDIF.
-
-    APPEND INITIAL LINE TO et_valid_assignments ASSIGNING FIELD-SYMBOL(<ls_target_assignment>).
-    <ls_target_assignment> =  <ls_source_assignment>.
 
   ENDMETHOD.
 
@@ -563,4 +506,53 @@ CLASS lcl_utility IMPLEMENTATION.
     <ls_operation>-instances   = lr_data.
 
   ENDMETHOD.
+
+  METHOD get_deadletter_route.
+    SELECT *
+    FROM zchannelrouteassignment
+    WHERE channel = @zpru_if_purc_order=>gcs_channel-po_order
+    AND   route   = @zpru_if_purc_order=>gcs_po_route-simple_router-dead_letter
+    INTO TABLE @DATA(lt_process_deadletter_route).
+
+    rs_deadletter_route =  VALUE #( lt_process_deadletter_route[ 1 ] OPTIONAL ).
+  ENDMETHOD.
+
+  METHOD get_invalid_message_route.
+    SELECT *
+    FROM zchannelrouteassignment
+    WHERE channel = @zpru_if_purc_order=>gcs_channel-po_order
+    AND   route   = @zpru_if_purc_order=>gcs_po_route-simple_router-invalid_message
+    INTO TABLE @DATA(lt_invalid_message_route).
+
+    rs_invalid_message_route =  VALUE #( lt_invalid_message_route[ 1 ] OPTIONAL ).
+  ENDMETHOD.
+
+
+  METHOD validate_channel_assignments.
+
+    CLEAR: et_valid_assignments.
+
+    DATA(lv_simple_route_count) = 0.
+    LOOP AT it_channel_assignments TRANSPORTING NO FIELDS
+     WHERE channel = zpru_if_purc_order=>gcs_channel-po_order AND
+           route   = iv_simple_route.
+      lv_simple_route_count += 1.
+    ENDLOOP.
+
+    IF sy-subrc <> 0 OR lv_simple_route_count > 1.
+      RETURN.
+    ENDIF.
+
+    ASSIGN it_channel_assignments[
+        channel = zpru_if_purc_order=>gcs_channel-po_order
+        route   = iv_simple_route ] TO FIELD-SYMBOL(<ls_source_assignment>).
+    IF sy-subrc <> 0.
+      RETURN.
+    ENDIF.
+
+    APPEND INITIAL LINE TO et_valid_assignments ASSIGNING FIELD-SYMBOL(<ls_target_assignment>).
+    <ls_target_assignment> =  <ls_source_assignment>.
+
+  ENDMETHOD.
+
 ENDCLASS.

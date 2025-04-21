@@ -51,7 +51,7 @@ CLASS lhc_goodreceipt IMPLEMENTATION.
     LOOP AT keys ASSIGNING FIELD-SYMBOL(<ls_input>).
       LOOP AT <ls_input>-%param ASSIGNING FIELD-SYMBOL(<ls_param>).
         APPEND INITIAL LINE TO lt_good_receipt_create ASSIGNING FIELD-SYMBOL(<ls_create>).
-        <ls_create>-%cid                   = <ls_input>-%cid.
+        <ls_create>-%cid                   = |{ <ls_input>-%cid }_{ sy-tabix }|.
         lv_last_id += 1.
         <ls_create>-goodsreceiptid         = |{ lv_last_id ALPHA = IN }|.
         <ls_create>-purchaseorderid        = <ls_param>-header-purchaseorderid.
