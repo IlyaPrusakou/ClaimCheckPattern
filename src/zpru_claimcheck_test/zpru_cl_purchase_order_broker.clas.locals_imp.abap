@@ -185,6 +185,11 @@ CLASS lcl_local_event_consumption IMPLEMENTATION.
       EXPORTING
           it_operation_package = lt_po_for_approval ).
 
+*    cl_abap_tx=>save( ).
+
+*    COMMIT ENTITIES RESPONSes FAILED data(ls_failed) REPORTED data(ls_reported).
+*    COMMIT WORK.
+
   ENDMETHOD.
 
 ENDCLASS.
@@ -355,7 +360,8 @@ CLASS lcl_router IMPLEMENTATION.
   METHOD route_approved_po_paymentterms.
 
     DATA: lt_po_prepaid  LIKE it_po_approved,
-          lt_po_postpaid LIKE it_po_approved.
+          lt_po_postpaid LIKE it_po_approved,
+          lt_po_no_route LIKE it_po_approved.
 
     IF it_channel_assignments IS INITIAL.
       lcl_utility=>prepare_operation_package(
@@ -371,9 +377,15 @@ CLASS lcl_router IMPLEMENTATION.
       IF <ls_po_approved>-header-paymentterms = zpru_if_purc_order=>gcs_po_payment_terms-prepaid.
         APPEND INITIAL LINE TO lt_po_prepaid ASSIGNING FIELD-SYMBOL(<ls_po_prepaid>).
         <ls_po_prepaid> = CORRESPONDING #( DEEP <ls_po_approved> ).
-      ELSE.
+      ELSEIF <ls_po_approved>-header-paymentterms = zpru_if_purc_order=>gcs_po_payment_terms-cod OR
+             <ls_po_approved>-header-paymentterms = zpru_if_purc_order=>gcs_po_payment_terms-eom60 OR
+             <ls_po_approved>-header-paymentterms = zpru_if_purc_order=>gcs_po_payment_terms-net30 OR
+             <ls_po_approved>-header-paymentterms = zpru_if_purc_order=>gcs_po_payment_terms-net45.
         APPEND INITIAL LINE TO lt_po_postpaid ASSIGNING FIELD-SYMBOL(<ls_po_postpaid>).
         <ls_po_postpaid> = CORRESPONDING #( DEEP <ls_po_approved> ).
+      ELSE.
+        APPEND INITIAL LINE TO lt_po_no_route ASSIGNING FIELD-SYMBOL(<ls_po_no_route>).
+        <ls_po_no_route> = CORRESPONDING #( DEEP <ls_po_approved> ).
       ENDIF.
     ENDLOOP.
 
@@ -417,6 +429,15 @@ CLASS lcl_router IMPLEMENTATION.
           IMPORTING
               et_operation_package   = ct_po_deadletter ).
       ENDIF.
+    ENDIF.
+
+    IF lt_po_no_route IS NOT INITIAL.
+      lcl_utility=>prepare_operation_package(
+        EXPORTING
+            is_channel_assignments = get_process_deadletter_route( )
+            it_purc_order_messsage = lt_po_no_route
+        IMPORTING
+            et_operation_package   = ct_po_deadletter ).
     ENDIF.
 
   ENDMETHOD.
@@ -525,24 +546,21 @@ CLASS lcl_utility IMPLEMENTATION.
     zpru_cl_purchase_order_broker=>mv_last_cid += 1.
     <ls_cid> = zpru_cl_purchase_order_broker=>mv_last_cid.
 
+    ASSIGN COMPONENT '%PARAM' OF STRUCTURE <ls_entry> TO <lt_param_tab>.
+    IF sy-subrc <> 0.
+      RETURN.
+    ENDIF.
+
     LOOP AT it_purc_order_messsage ASSIGNING FIELD-SYMBOL(<ls_po_message>).
-
-      ASSIGN COMPONENT '%PARAM' OF STRUCTURE <ls_entry> TO <lt_param_tab>.
-      IF sy-subrc <> 0.
-        RETURN.
-      ENDIF.
-
       APPEND INITIAL LINE TO <lt_param_tab> ASSIGNING <ls_param>.
       <ls_param> = CORRESPONDING #( DEEP <ls_po_message> ).
-
-      APPEND INITIAL LINE TO et_operation_package ASSIGNING FIELD-SYMBOL(<ls_operation>).
-      <ls_operation>-op          = if_abap_behv=>op-m-action.
-      <ls_operation>-entity_name = zpru_if_purc_order=>gcs_entity_name-invoice.
-      <ls_operation>-sub_name    = zpru_if_purc_order=>gcs_action_reciver-onpurchaseordercreate.
-      <ls_operation>-instances   = lr_data.
-
-
     ENDLOOP.
+
+    APPEND INITIAL LINE TO et_operation_package ASSIGNING FIELD-SYMBOL(<ls_operation>).
+    <ls_operation>-op          = if_abap_behv=>op-m-action.
+    <ls_operation>-entity_name = zpru_if_purc_order=>gcs_entity_name-invoice.
+    <ls_operation>-sub_name    = zpru_if_purc_order=>gcs_action_reciver-onpurchaseordercreate.
+    <ls_operation>-instances   = lr_data.
 
   ENDMETHOD.
 ENDCLASS.

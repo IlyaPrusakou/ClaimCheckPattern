@@ -1,3 +1,19 @@
+CLASS lsc_zchannelpersistencetp DEFINITION INHERITING FROM cl_abap_behavior_saver.
+
+  PROTECTED SECTION.
+
+    METHODS save_modified REDEFINITION.
+
+ENDCLASS.
+
+CLASS lsc_zchannelpersistencetp IMPLEMENTATION.
+
+  METHOD save_modified.
+    DATA(lv_persist) = 1.
+  ENDMETHOD.
+
+ENDCLASS.
+
 CLASS lhc_channelpersistence DEFINITION INHERITING FROM cl_abap_behavior_handler.
   PRIVATE SECTION.
 
@@ -130,13 +146,13 @@ CLASS lhc_channelpersistence IMPLEMENTATION.
     LOOP AT keys ASSIGNING FIELD-SYMBOL(<ls_input>).
       LOOP AT <ls_input>-%param ASSIGNING FIELD-SYMBOL(<ls_param>).
         APPEND INITIAL LINE TO lt_approval_create ASSIGNING FIELD-SYMBOL(<ls_create>).
-        <ls_create>-%cid            = <ls_input>-%cid.
+        <ls_create>-%cid                   = <ls_input>-%cid.
         lv_last_id += 1.
-        <ls_create>-persistencyid   = |{ lv_last_id ALPHA = IN }|.
-        <ls_create>-%data-messageid = <ls_param>-messageid.
-        <ls_create>-purchaseorderid = <ls_param>-header-purchaseorderid.
-        <ls_create>-%data-orderdate = <ls_param>-header-orderdate.
-        <ls_create>-%data-status    = zpru_if_purc_order=>gcs_storage_type-invalide_message.
+        <ls_create>-persistencyid          = |{ lv_last_id ALPHA = IN }|.
+        <ls_create>-%data-messageid        = <ls_param>-messageid.
+        <ls_create>-purchaseorderid        = <ls_param>-header-purchaseorderid.
+        <ls_create>-%data-orderdate        = <ls_param>-header-orderdate.
+        <ls_create>-%data-status           = zpru_if_purc_order=>gcs_storage_type-invalide_message.
         <ls_create>-%data-controltimestamp = <ls_param>-timestamp.
       ENDLOOP.
     ENDLOOP.

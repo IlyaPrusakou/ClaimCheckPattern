@@ -13,6 +13,7 @@ INTERFACE zpru_if_purc_order
   CONSTANTS: BEGIN OF gcs_po_status,
                pending_approval TYPE char1 VALUE `P`,
                approved         TYPE char1 VALUE `A`,
+               processed        TYPE char1 VALUE `R`,
              END OF gcs_po_status.
 
   CONSTANTS: BEGIN OF gcs_po_payment_terms,

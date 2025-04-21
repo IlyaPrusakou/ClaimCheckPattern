@@ -1,3 +1,19 @@
+CLASS lsc_zgoodreceipttp DEFINITION INHERITING FROM cl_abap_behavior_saver.
+
+  PROTECTED SECTION.
+
+    METHODS save_modified REDEFINITION.
+
+ENDCLASS.
+
+CLASS lsc_zgoodreceipttp IMPLEMENTATION.
+
+  METHOD save_modified.
+    DATA(lv_gr) = 1.
+  ENDMETHOD.
+
+ENDCLASS.
+
 CLASS lhc_goodreceipt DEFINITION INHERITING FROM cl_abap_behavior_handler.
   PRIVATE SECTION.
 
@@ -35,11 +51,11 @@ CLASS lhc_goodreceipt IMPLEMENTATION.
     LOOP AT keys ASSIGNING FIELD-SYMBOL(<ls_input>).
       LOOP AT <ls_input>-%param ASSIGNING FIELD-SYMBOL(<ls_param>).
         APPEND INITIAL LINE TO lt_good_receipt_create ASSIGNING FIELD-SYMBOL(<ls_create>).
-        <ls_create>-%cid            = <ls_input>-%cid.
+        <ls_create>-%cid                   = <ls_input>-%cid.
         lv_last_id += 1.
-        <ls_create>-goodsreceiptid       = |{ lv_last_id ALPHA = IN }|.
-        <ls_create>-purchaseorderid = <ls_param>-header-purchaseorderid.
-        <ls_create>-%data-receiptdate = <ls_param>-header-orderdate.
+        <ls_create>-goodsreceiptid         = |{ lv_last_id ALPHA = IN }|.
+        <ls_create>-purchaseorderid        = <ls_param>-header-purchaseorderid.
+        <ls_create>-%data-receiptdate      = <ls_param>-header-orderdate.
         <ls_create>-%data-controltimestamp = <ls_param>-timestamp.
       ENDLOOP.
     ENDLOOP.

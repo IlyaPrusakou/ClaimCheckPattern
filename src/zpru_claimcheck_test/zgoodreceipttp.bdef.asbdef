@@ -1,4 +1,4 @@
-managed implementation in class zbp_goodreceipttp unique;
+managed with additional save with full data implementation in class zbp_goodreceipttp unique;
 strict ( 2 );
 
 define behavior for ZGoodReceiptTP alias GoodReceipt

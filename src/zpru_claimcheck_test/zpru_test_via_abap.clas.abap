@@ -74,6 +74,7 @@ CLASS zpru_test_via_abap IMPLEMENTATION.
     <ls_po>-shippingmethod  = `Freight Shipping`.
     <ls_po>-controltimestamp = lv_timestamp.
 
+    APPEND INITIAL LINE TO lt_po_create ASSIGNING <ls_po>.
     " valid prepaid APPROVED
     lv_last_id += 1.
     <ls_po>-%cid            = lv_last_id.
@@ -91,6 +92,7 @@ CLASS zpru_test_via_abap IMPLEMENTATION.
     <ls_po>-shippingmethod  = `Freight Shipping`.
     <ls_po>-controltimestamp = lv_timestamp.
 
+    APPEND INITIAL LINE TO lt_po_create ASSIGNING <ls_po>.
     " valid prepaid pending
     lv_last_id += 1.
     <ls_po>-%cid            = lv_last_id.
@@ -108,6 +110,7 @@ CLASS zpru_test_via_abap IMPLEMENTATION.
     <ls_po>-shippingmethod  = `Freight Shipping`.
     <ls_po>-controltimestamp = lv_timestamp.
 
+    APPEND INITIAL LINE TO lt_po_create ASSIGNING <ls_po>.
     " valid postpaid APPROVED
     lv_last_id += 1.
     <ls_po>-%cid            = lv_last_id.
@@ -125,6 +128,7 @@ CLASS zpru_test_via_abap IMPLEMENTATION.
     <ls_po>-shippingmethod  = `Freight Shipping`.
     <ls_po>-controltimestamp = lv_timestamp.
 
+    APPEND INITIAL LINE TO lt_po_create ASSIGNING <ls_po>.
     " valid postpaid APPROVED fall into dead letter bcz wrong payment terms
     lv_last_id += 1.
     <ls_po>-%cid            = lv_last_id.
@@ -139,6 +143,40 @@ CLASS zpru_test_via_abap IMPLEMENTATION.
     <ls_po>-deliverydate    = lv_local_date.
     <ls_po>-status          = zpru_if_purc_order=>gcs_po_status-approved.
     <ls_po>-paymentterms    = `ERR`.
+    <ls_po>-shippingmethod  = `Freight Shipping`.
+    <ls_po>-controltimestamp = lv_timestamp.
+
+    APPEND INITIAL LINE TO lt_po_create ASSIGNING <ls_po>.
+    lv_last_id += 1.
+    <ls_po>-%cid            = lv_last_id.
+    <ls_po>-purchaseorderid = |{ lv_last_id ALPHA = IN }|.
+    <ls_po>-orderdate       = lv_local_date.
+    <ls_po>-supplierid      = `SUP005`.
+    <ls_po>-suppliername    = `Universal Manufacturing Co.`.
+    <ls_po>-buyerid         = `BUY505`.
+    <ls_po>-buyername       = `Apex Innovations`.
+    <ls_po>-totalamount     = `100.00`.
+    <ls_po>-headercurrency  = 'USD'.
+    <ls_po>-deliverydate    = lv_local_date.
+    <ls_po>-status          = zpru_if_purc_order=>gcs_po_status-processed. " there is no route for this status
+    <ls_po>-paymentterms    = zpru_if_purc_order=>gcs_po_payment_terms-eom60.
+    <ls_po>-shippingmethod  = `Freight Shipping`.
+    <ls_po>-controltimestamp = lv_timestamp.
+
+    APPEND INITIAL LINE TO lt_po_create ASSIGNING <ls_po>.
+    lv_last_id += 1.
+    <ls_po>-%cid            = lv_last_id.
+    <ls_po>-purchaseorderid = |{ lv_last_id ALPHA = IN }|.
+    <ls_po>-orderdate       = lv_local_date.
+    <ls_po>-supplierid      = `SUP003`. " will be invalid
+    <ls_po>-suppliername    = `Prime Industrial Solutions`.
+    <ls_po>-buyerid         = `BUY303`.
+    <ls_po>-buyername       = `Orion Tech Corp`.
+    <ls_po>-totalamount     = `100.00`.
+    <ls_po>-headercurrency  = 'USD'.
+    <ls_po>-deliverydate    = lv_local_date.
+    <ls_po>-status          = zpru_if_purc_order=>gcs_po_status-approved.
+    <ls_po>-paymentterms    = zpru_if_purc_order=>gcs_po_payment_terms-eom60.
     <ls_po>-shippingmethod  = `Freight Shipping`.
     <ls_po>-controltimestamp = lv_timestamp.
 
@@ -199,11 +237,6 @@ CLASS zpru_test_via_abap IMPLEMENTATION.
 *BUY303: Orion Tech Corp
 *BUY404: Nova Enterprises
 *BUY505: Apex Innovations
-
-
-
-
-
 
   ENDMETHOD.
 

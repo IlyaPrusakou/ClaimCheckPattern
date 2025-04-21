@@ -1,4 +1,4 @@
-managed implementation in class zbp_invoiceheadertp unique;
+managed with additional save with full data implementation in class zbp_invoiceheadertp unique;
 strict ( 2 );
 
 define behavior for ZInvoiceHeaderTP alias Invoice
