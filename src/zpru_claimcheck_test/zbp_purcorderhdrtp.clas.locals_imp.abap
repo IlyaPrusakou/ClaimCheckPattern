@@ -77,7 +77,8 @@ CLASS lsc_zpurcorderhdrtp IMPLEMENTATION.
       <ls_payload>-%param-header-shippingmethod  = <ls_order>-shippingmethod.
       LOOP AT create-purchaseitem ASSIGNING FIELD-SYMBOL(<ls_item>)
                                   WHERE purchaseorderid = <ls_order>-purchaseorderid.
-        APPEND INITIAL LINE TO <ls_payload>-%param-header-items ASSIGNING FIELD-SYMBOL(<ls_payload_item>).
+        APPEND INITIAL LINE TO <ls_payload>-%param-header-items
+                                              ASSIGNING FIELD-SYMBOL(<ls_payload_item>).
         <ls_payload_item>-itemnumber         = <ls_item>-itemnumber.
         <ls_payload_item>-purchaseorderid    = <ls_item>-purchaseorderid .
         <ls_payload_item>-productid          = <ls_item>-productid.
@@ -91,7 +92,9 @@ CLASS lsc_zpurcorderhdrtp IMPLEMENTATION.
       ENDLOOP.
     ENDLOOP.
 
-    RAISE ENTITY EVENT zpurcorderhdrtp~ordercreated FROM lt_payload.
+    RAISE ENTITY
+    EVENT zpurcorderhdrtp~ordercreated
+    FROM lt_payload.
 
   ENDMETHOD.
 

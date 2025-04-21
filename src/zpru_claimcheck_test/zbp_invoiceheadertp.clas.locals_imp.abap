@@ -14,7 +14,9 @@ CLASS lsc_zinvoiceheadertp IMPLEMENTATION.
 
 ENDCLASS.
 
-CLASS lhc_invoice DEFINITION INHERITING FROM cl_abap_behavior_handler.
+CLASS lhc_invoice DEFINITION
+INHERITING FROM cl_abap_behavior_handler.
+
   PRIVATE SECTION.
 
     CLASS-DATA: mv_last_id TYPE i.
