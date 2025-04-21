@@ -64,7 +64,7 @@ CLASS lhc_channelpersistence IMPLEMENTATION.
     LOOP AT keys ASSIGNING FIELD-SYMBOL(<ls_input>).
       LOOP AT <ls_input>-%param ASSIGNING FIELD-SYMBOL(<ls_param>).
         APPEND INITIAL LINE TO lt_approval_create ASSIGNING FIELD-SYMBOL(<ls_create>).
-        <ls_create>-%cid            = |{ <ls_input>-%cid }_{ sy-tabix }|.
+        <ls_create>-%cid            = condense( |{ <ls_input>-%cid }_{ sy-tabix }| ).
         lv_last_id += 1.
         <ls_create>-persistencyid   = |{ lv_last_id ALPHA = IN }|.
         <ls_create>-%data-messageid = <ls_param>-messageid.
@@ -113,7 +113,7 @@ CLASS lhc_channelpersistence IMPLEMENTATION.
     LOOP AT keys ASSIGNING FIELD-SYMBOL(<ls_input>).
       LOOP AT <ls_input>-%param ASSIGNING FIELD-SYMBOL(<ls_param>).
         APPEND INITIAL LINE TO lt_approval_create ASSIGNING FIELD-SYMBOL(<ls_create>).
-        <ls_create>-%cid            = |{ <ls_input>-%cid }_{ sy-tabix }|.
+        <ls_create>-%cid            = condense( |{ <ls_input>-%cid }_{ sy-tabix }| ).
         lv_last_id += 1.
         <ls_create>-persistencyid   = |{ lv_last_id ALPHA = IN }|.
         <ls_create>-%data-messageid = <ls_param>-messageid.
@@ -163,7 +163,7 @@ CLASS lhc_channelpersistence IMPLEMENTATION.
     LOOP AT keys ASSIGNING FIELD-SYMBOL(<ls_input>).
       LOOP AT <ls_input>-%param ASSIGNING FIELD-SYMBOL(<ls_param>).
         APPEND INITIAL LINE TO lt_approval_create ASSIGNING FIELD-SYMBOL(<ls_create>).
-        <ls_create>-%cid                   = |{ <ls_input>-%cid }_{ sy-tabix }|.
+        <ls_create>-%cid                   = condense( |{ <ls_input>-%cid }_{ sy-tabix }| ).
         lv_last_id += 1.
         <ls_create>-persistencyid          = |{ lv_last_id ALPHA = IN }|.
         <ls_create>-%data-messageid        = <ls_param>-messageid.

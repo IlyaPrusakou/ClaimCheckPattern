@@ -501,8 +501,8 @@ CLASS lcl_utility IMPLEMENTATION.
 
     APPEND INITIAL LINE TO et_operation_package ASSIGNING FIELD-SYMBOL(<ls_operation>).
     <ls_operation>-op          = if_abap_behv=>op-m-action.
-    <ls_operation>-entity_name = zpru_if_purc_order=>gcs_entity_name-invoice.
-    <ls_operation>-sub_name    = zpru_if_purc_order=>gcs_action_reciver-onpurchaseordercreate.
+    <ls_operation>-entity_name = is_channel_assignments-businessobjectentity.
+    <ls_operation>-sub_name    = is_channel_assignments-businessobjectaction.
     <ls_operation>-instances   = lr_data.
 
   ENDMETHOD.

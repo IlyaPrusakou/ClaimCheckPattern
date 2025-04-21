@@ -34,6 +34,48 @@ CLASS zpru_test_via_abap IMPLEMENTATION.
           lv_local_time TYPE t,
           lv_time_zone  TYPE cl_abap_context_info=>ty_time_zone.
 
+*    DELETE FROM zapproval_reqst.
+*    IF sy-subrc = 0.
+*      COMMIT WORK AND WAIT.
+*    ELSE.
+*      ROLLBACK WORK.
+*    ENDIF.
+*
+*    DELETE FROM zgr_receipt_head.
+*    IF sy-subrc = 0.
+*      COMMIT WORK AND WAIT.
+*    ELSE.
+*      ROLLBACK WORK.
+*    ENDIF.
+*
+*    DELETE FROM zinvoice_header.
+*    IF sy-subrc = 0.
+*      COMMIT WORK AND WAIT.
+*    ELSE.
+*      ROLLBACK WORK.
+*    ENDIF.
+*
+*    DELETE FROM zpru_chnl_store.
+*    IF sy-subrc = 0.
+*      COMMIT WORK AND WAIT.
+*    ELSE.
+*      ROLLBACK WORK.
+*    ENDIF.
+*
+*    DELETE FROM zpurc_order_hdr.
+*    IF sy-subrc = 0.
+*      COMMIT WORK AND WAIT.
+*    ELSE.
+*      ROLLBACK WORK.
+*    ENDIF.
+*
+*    DELETE FROM zpurc_order_item.
+*    IF sy-subrc = 0.
+*      COMMIT WORK AND WAIT.
+*    ELSE.
+*      ROLLBACK WORK.
+*    ENDIF.
+*    RETURN.
     lv_local_date = cl_abap_context_info=>get_system_date( ).
     lv_local_time = cl_abap_context_info=>get_system_time( ).
     TRY.
