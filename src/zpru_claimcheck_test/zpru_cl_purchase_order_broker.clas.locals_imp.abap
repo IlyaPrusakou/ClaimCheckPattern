@@ -65,6 +65,10 @@ CLASS lcl_router DEFINITION.
       CHANGING
         ct_po_deadletter       TYPE abp_behv_changes_tab.
 
+    METHODS read_dynamic_routes
+      RETURNING
+        VALUE(rt_dynamic_routes) TYPE zpru_if_purc_order=>tt_channel_assignments.
+
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -146,9 +150,7 @@ CLASS lcl_local_event_consumption IMPLEMENTATION.
     " read customizing table with list of receivers
     " further it will be used in Contend-Based and
     " Point-to-Point patterns
-    SELECT * FROM zchannelrouteassignment
-    WHERE channel = @zpru_if_purc_order=>gcs_channel-po_order
-    INTO TABLE @DATA(lt_channel_assignments).
+    DATA(lt_channel_assignments) = lo_router->read_dynamic_routes( ).
 
     " Content-Based Router pattern
     lo_router->route_approved_po_paymentterms(
@@ -454,6 +456,12 @@ CLASS lcl_router IMPLEMENTATION.
       CHANGING
           ct_operation_package   = et_po_for_approval ).
 
+  ENDMETHOD.
+
+  METHOD read_dynamic_routes.
+    SELECT * FROM zchannelrouteassignment
+    WHERE channel = @zpru_if_purc_order=>gcs_channel-po_order
+    INTO TABLE @rt_dynamic_routes.
   ENDMETHOD.
 
 ENDCLASS.

@@ -1,0 +1,26 @@
+managed with additional save with full data
+implementation in class zbp_channelrouteassignmenttp unique;
+strict ( 2 );
+
+define behavior for ZChannelRouteAssignmentTP alias DynamicRouteAssignment
+persistent table zpru_chnl_assgmt
+lock master
+authorization master ( instance )
+{
+  create;
+  update;
+  delete;
+
+  field ( readonly : update ) Channel, Route, BusinessObject, BusinessObjectEntity, BusinessObjectAction;
+  field ( mandatory : create ) Channel, Route, BusinessObject, BusinessObjectEntity, BusinessObjectAction;
+
+  mapping for zpru_chnl_assgmt
+    {
+      Channel              = channel;
+      Route                = route;
+      BusinessObject       = bdef;
+      BusinessObjectEntity = entity;
+      BusinessObjectAction = action;
+      Description          = description;
+    }
+}
